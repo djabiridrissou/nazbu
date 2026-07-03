@@ -59,7 +59,7 @@ never touches Hypercore:
 ```js
 const Nazbu = require('nazbu')
 
-const room = new Nazbu({ name: 'caisse-1' })
+const room = new Nazbu({ name: 'caisse-1', room: 'pharmacie-42' })
 
 room.on('message', (data, meta) => {
   console.log(`from ${meta.from}:`, data)   // received from any peer on the LAN
@@ -72,6 +72,10 @@ room.send({ type: 'sale', total: 4500 })    // broadcast to everyone, no server
 
 Messages are durable and re-sync automatically on reconnect. `send()` history is
 replayed to fresh peers, so a machine that joins late catches up on everything.
+
+**Rooms = isolation.** Only nodes in the same `room` discover and sync with each
+other. Different apps, shops or tenants use different rooms and never cross-talk,
+even on the same Wi-Fi — essential for multi-tenant apps like a chain of shops.
 
 ## Demos
 

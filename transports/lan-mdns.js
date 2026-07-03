@@ -23,7 +23,7 @@ const { Bonjour } = require('bonjour-service')
 const SERVICE_TYPE = 'nazbu'
 const RETRY_MS = 3000
 
-module.exports = function lanMdns ({ myKey }) {
+module.exports = function lanMdns ({ myKey, room = 'default' }) {
   const events = new EventEmitter()
   const peers = new Map() // peerKey -> { host, port, connected }
   let server = null
@@ -50,6 +50,8 @@ module.exports = function lanMdns ({ myKey }) {
   function onService (service) {
     const peerKey = service.txt && service.txt.key
     if (!peerKey || peerKey === myKey) return
+    // Isolation: ignore any peer that isn't in our room.
+    if ((service.txt && service.txt.room) !== room) return
     const host =
       (service.referer && service.referer.address) ||
       (service.addresses && service.addresses[0])
@@ -85,7 +87,7 @@ module.exports = function lanMdns ({ myKey }) {
       name: 'nazbu-' + myKey.slice(0, 8),
       type: SERVICE_TYPE,
       port,
-      txt: { key: myKey }
+      txt: { key: myKey, room }
     })
 
     browser = bonjour.find({ type: SERVICE_TYPE })

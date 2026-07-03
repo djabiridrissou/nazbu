@@ -26,7 +26,11 @@ class Nazbu extends EventEmitter {
   constructor (opts = {}) {
     super()
     this.name = opts.name || 'peer-' + process.pid
-    this.store = new Corestore(opts.storage || './.nazbu-data/' + this.name)
+    // A room is the isolation boundary: only nodes in the SAME room discover
+    // and sync with each other. Different apps / shops / tenants → different
+    // rooms → zero cross-talk, even on the same LAN.
+    this.room = opts.room || 'default'
+    this.store = new Corestore(opts.storage || './.nazbu-data/' + this.room + '/' + this.name)
     this._createTransport = opts.transport || createTransport
     this.cores = new Map()   // hexKey -> hypercore
     this.cursor = new Map()  // hexKey -> messages already emitted
@@ -44,7 +48,7 @@ class Nazbu extends EventEmitter {
     this.cores.set(this.key, this.local)
     this.local.on('append', () => this._drain(this.key, this.local))
 
-    this.transport = this._createTransport({ myKey: this.key })
+    this.transport = this._createTransport({ myKey: this.key, room: this.room })
     this.transport.events.on('peer-key', hex => this._track(hex))
     this.transport.events.on('connection', (stream, isInitiator) => {
       const rep = this.store.replicate(isInitiator)

@@ -56,7 +56,8 @@ function apply (mv) {
 }
 
 async function main () {
-  room = new Nazbu({ name, storage: './.nazbu-stock/' + name })
+  const RM = process.env.NAZBU_ROOM || 'nazbu-stock'
+  room = new Nazbu({ name, room: RM, storage: './.nazbu-stock/' + RM + '/' + name })
   room.on('message', apply)
   room.on('peers', render)
   await room.start()

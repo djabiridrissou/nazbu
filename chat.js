@@ -17,7 +17,8 @@ const AUTO = !!process.env.NAZBU_AUTO
 let rl
 
 async function main () {
-  const room = new Nazbu({ name, storage: './.nazbu-chat/' + name })
+  const RM = process.env.NAZBU_ROOM || 'nazbu-chat'
+  const room = new Nazbu({ name, room: RM, storage: './.nazbu-chat/' + RM + '/' + name })
 
   room.on('message', (text, meta) => {
     if (AUTO) { console.log(`[${name}] recv <- ${meta.from}: ${text}`); return }
