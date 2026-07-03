@@ -1,0 +1,4 @@
+node_modules/
+.nazbu/
+*.log
+.DS_Store
