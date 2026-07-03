@@ -1,69 +1,60 @@
+<div align="center">
+
+![Nazbu](assets/hero.svg)
+
 # Nazbu
 
 **Deploy any app to a local network, in one click. No server. No internet. Real-time P2P sync.**
 
-Install the desktop app on each machine, put them on the same access point, and
-everyone is online together — instantly, with no central server and no internet
-connection anywhere.
+[![license](https://img.shields.io/badge/license-MIT-3ddc97.svg)](LICENSE)
+[![node](https://img.shields.io/badge/node-%3E%3D18-3fb950.svg)](https://nodejs.org)
+[![p2p](https://img.shields.io/badge/P2P-Hypercore-2f81f7.svg)](https://docs.pears.com/)
+[![offline-first](https://img.shields.io/badge/offline--first-yes-e3b341.svg)](#how-it-works)
+[![stars](https://img.shields.io/github/stars/djabiridrissou/nazbu?style=social)](https://github.com/djabiridrissou/nazbu/stargazers)
 
-Built on the [Hypercore](https://docs.pears.com/) P2P stack.
+</div>
 
 ---
+
+Install the app on each machine, put them on the same access point, and everyone
+is online together — instantly, with **no central server and no internet**
+connection anywhere.
 
 ## Why
 
 Most apps die the moment the internet drops. A pharmacy, a shop, a warehouse —
-all their tills go dark because a router upstream failed.
+every till goes dark because a router upstream failed.
 
 Nazbu flips it: the **local network is the backend**. Each machine carries its
 own copy of the data, discovers its peers on the LAN, and keeps everyone in sync
-in real time. Internet becomes optional — used only to back up to the cloud when
-it happens to be available.
+in real time. When peers reconnect — even on a *different* network — they
+catch up automatically. Internet becomes optional, used only to back up to the
+cloud when it happens to be around.
 
-## Status — Phase 0 (proof of concept) ✅
-
-This repo currently proves the single hardest part: **two nodes on the same LAN,
-with no internet, that discover each other and sync shared state live.**
-
-- Discovery: **mDNS** (link-local multicast) — needs a switch/access point, *not*
-  the internet.
-- Data: each node has its own append-only **Hypercore** log.
-- Transport: plain TCP + **Corestore** replication.
-- Shared state: the sum of every node's log length — conflict-free, so it's
-  genuinely multi-writer with zero coordination.
-
-### Try it (two terminals, no internet required)
+## Quickstart
 
 ```bash
-npm install
-
-# terminal 1
-node nazbu.js alice
-
-# terminal 2
-node nazbu.js bob
+git clone https://github.com/djabiridrissou/nazbu.git
+cd nazbu && npm install
 ```
 
-Press **SPACE** in either terminal to +1. Watch `TOTAL` climb in **both** — even
-with Wi-Fi's internet turned off. Press `q` to quit.
-
-> Two machines? Run `node nazbu.js <name>` on each, on the same access point.
-
-More demos, both built on the library:
+Run a demo on two machines on the same Wi-Fi (internet can be off):
 
 ```bash
-node chat.js  alice        # real-time P2P chat, no server
-node stock.js till-1       # shared stock across tills — sales as movement
-                           # events; oversell surfaces as negative stock.
+node stock.js till-1      # machine 1
+node stock.js till-2      # machine 2
 ```
 
-`stock.js` is the Womola model in miniature: a sale is a `qty: -1` event, not an
-overwrite, so offline tills merge with zero conflicts and never silently lose a sale.
+Sell an item on one — the stock drops on **both**. Cut the Wi-Fi, sell on each
+side, reconnect: everything reconciles by itself. No server was ever involved.
+
+> **If peers don't find each other:** allow `node` through the macOS firewall,
+> and avoid "guest" Wi-Fi (it blocks multicast) — a phone hotspot works great.
 
 ## Use it as a library
 
-The whole P2P/offline machinery hides behind a WebSocket-like API. An app never
-touches Hypercore:
+The whole P2P/offline machinery hides behind a WebSocket-like API. Your app
+never touches Hypercore:
 
 ```js
 const Nazbu = require('nazbu')
@@ -79,18 +70,43 @@ await room.start()
 room.send({ type: 'sale', total: 4500 })    // broadcast to everyone, no server
 ```
 
-Messages are durable and re-sync automatically when peers reconnect — even on a
-different network. `chat.js` and `nazbu.js` in this repo are both built on it.
+Messages are durable and re-sync automatically on reconnect. `send()` history is
+replayed to fresh peers, so a machine that joins late catches up on everything.
+
+## Demos
+
+| Demo | What it shows |
+|------|---------------|
+| `node nazbu.js <name>` | Shared counter — SPACE broadcasts +1 to every machine. |
+| `node chat.js <name>`  | Real-time P2P chat, no server. |
+| `node stock.js <name>` | The Womola model: sales as movement events → offline tills merge with **zero conflicts** and oversell surfaces as negative stock instead of a silently lost sale. |
+
+## How it works
+
+```
+① Same network      A ⇄ B      in sync (events 1..7)
+② Network drops     A   |   B   each keeps working locally, appends 8, 9, 10…
+③ New network       A → 🔍 ← B  mDNS re-discovers peers automatically
+④ Reconnect         A ⇄ B      "I'm missing 8,9,10" → exchanged → recombined
+```
+
+- **Discovery:** mDNS (link-local multicast) — needs a switch/access point, *not*
+  the internet.
+- **Data:** each node has its own append-only [Hypercore](https://docs.pears.com/)
+  log; state is derived by replaying events.
+- **Transport:** pluggable (`transports/lan-mdns.js`). Same core, drop in a new
+  transport file to connect peers other ways later.
+- **Conflicts:** model quantities as **movements/deltas** (commutative → merge for
+  free); entity edits as last-write-wins. No coordinator, no primary.
 
 ## Roadmap
 
-- **Phase 0 — Discovery + replication on LAN, offline.** ✅ *(this repo)*
-- **Phase 1 — WebSocket-like shim.** ✅ A familiar emit/listen API (`index.js`),
-  backed by P2P replication — so existing web apps barely change.
-- **Phase 2 — CLI + template.** `npx create-nazbu` → an app running on the LAN,
-  plus an install page and manual.
-- **Phase 3 — Flagship demo.** Port a real React + Node.js app onto Nazbu.
+- **Phase 0 — Discovery + replication on LAN, offline.** ✅
+- **Phase 1 — WebSocket-like API** (`index.js`). ✅
+- **Phase 2 — `npx create-nazbu`** CLI + template + install page.
+- **Phase 3 — Flagship demo:** a real React + Node app synced over Nazbu, with
+  its database as a local projection of the shared event log (non-invasive sidecar).
 
 ## License
 
-MIT
+[MIT](LICENSE) © Djabir
