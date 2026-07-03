@@ -49,10 +49,32 @@ with Wi-Fi's internet turned off. Press `q` to quit.
 
 > Two machines? Run `node nazbu.js <name>` on each, on the same access point.
 
+## Use it as a library
+
+The whole P2P/offline machinery hides behind a WebSocket-like API. An app never
+touches Hypercore:
+
+```js
+const Nazbu = require('nazbu')
+
+const room = new Nazbu({ name: 'caisse-1' })
+
+room.on('message', (data, meta) => {
+  console.log(`from ${meta.from}:`, data)   // received from any peer on the LAN
+})
+room.on('peers', (count) => console.log('peers:', count))
+
+await room.start()
+room.send({ type: 'sale', total: 4500 })    // broadcast to everyone, no server
+```
+
+Messages are durable and re-sync automatically when peers reconnect — even on a
+different network. `chat.js` and `nazbu.js` in this repo are both built on it.
+
 ## Roadmap
 
 - **Phase 0 — Discovery + replication on LAN, offline.** ✅ *(this repo)*
-- **Phase 1 — WebSocket-like shim.** A familiar emit/listen API for the frontend,
+- **Phase 1 — WebSocket-like shim.** ✅ A familiar emit/listen API (`index.js`),
   backed by P2P replication — so existing web apps barely change.
 - **Phase 2 — CLI + template.** `npx create-nazbu` → an app running on the LAN,
   plus an install page and manual.
