@@ -49,6 +49,17 @@ with Wi-Fi's internet turned off. Press `q` to quit.
 
 > Two machines? Run `node nazbu.js <name>` on each, on the same access point.
 
+More demos, both built on the library:
+
+```bash
+node chat.js  alice        # real-time P2P chat, no server
+node stock.js till-1       # shared stock across tills — sales as movement
+                           # events; oversell surfaces as negative stock.
+```
+
+`stock.js` is the Womola model in miniature: a sale is a `qty: -1` event, not an
+overwrite, so offline tills merge with zero conflicts and never silently lose a sale.
+
 ## Use it as a library
 
 The whole P2P/offline machinery hides behind a WebSocket-like API. An app never
