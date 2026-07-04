@@ -1,0 +1,16 @@
+{
+  "name": "create-nazbu",
+  "version": "0.0.1",
+  "description": "Scaffold a new Nazbu app — P2P, local-first, no server, no internet.",
+  "bin": {
+    "create-nazbu": "index.js"
+  },
+  "type": "commonjs",
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": ["nazbu", "create", "scaffold", "p2p", "local-first"],
+  "author": "Djabir",
+  "license": "MIT",
+  "files": ["index.js", "template"]
+}

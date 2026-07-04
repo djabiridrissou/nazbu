@@ -1,0 +1,12 @@
+{
+  "name": "my-nazbu-app",
+  "version": "0.1.0",
+  "private": true,
+  "type": "commonjs",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "dependencies": {
+    "nazbu": "github:djabiridrissou/nazbu"
+  }
+}

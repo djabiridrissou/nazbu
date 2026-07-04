@@ -51,6 +51,16 @@ side, reconnect: everything reconciles by itself. No server was ever involved.
 > **If peers don't find each other:** allow `node` through the macOS firewall,
 > and avoid "guest" Wi-Fi (it blocks multicast) — a phone hotspot works great.
 
+## Start a new app
+
+```bash
+npm create nazbu@latest my-app     # scaffolds a ready-to-run P2P app
+cd my-app && npm install
+node app.js alice                  # then on another machine: node app.js bob
+```
+
+*(Not on npm yet? Run it straight from this repo: `node create-nazbu/ my-app`.)*
+
 ## Use it as a library
 
 The whole P2P/offline machinery hides behind a WebSocket-like API. Your app
@@ -107,7 +117,7 @@ even on the same Wi-Fi — essential for multi-tenant apps like a chain of shops
 
 - **Phase 0 — Discovery + replication on LAN, offline.** ✅
 - **Phase 1 — WebSocket-like API** (`index.js`). ✅
-- **Phase 2 — `npx create-nazbu`** CLI + template + install page.
+- **Phase 2 — `npm create nazbu`** CLI + template. ✅ (install page + npm publish next.)
 - **Phase 3 — Flagship demo:** a real React + Node app synced over Nazbu, with
   its database as a local projection of the shared event log (non-invasive sidecar).
 
