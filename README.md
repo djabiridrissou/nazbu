@@ -31,6 +31,16 @@ in real time. When peers reconnect — even on a *different* network — they
 catch up automatically. Internet becomes optional, used only to back up to the
 cloud when it happens to be around.
 
+## Demo
+
+<div align="center">
+
+![Nazbu shared-stock demo — two tills syncing offline](assets/demo.gif)
+
+*One sale updates both tills · Wi-Fi drops · reconnect → merged, no conflict.*
+
+</div>
+
 ## Quickstart
 
 ```bash
