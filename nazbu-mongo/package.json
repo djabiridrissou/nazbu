@@ -1,0 +1,20 @@
+{
+  "name": "nazbu-mongo",
+  "version": "0.0.1",
+  "description": "Non-invasive MongoDB sidecar for Nazbu — mirror a database across machines with no server, no internet.",
+  "type": "commonjs",
+  "main": "bridge.js",
+  "scripts": {
+    "test": "node test.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": ["nazbu", "mongodb", "change-streams", "local-first", "sync", "p2p"],
+  "author": "Djabir",
+  "license": "MIT",
+  "dependencies": {
+    "mongodb": "^6.8.0",
+    "nazbu": "github:djabiridrissou/nazbu"
+  }
+}
