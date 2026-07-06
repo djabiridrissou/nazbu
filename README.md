@@ -58,8 +58,11 @@ node stock.js till-2      # machine 2
 Sell an item on one — the stock drops on **both**. Cut the Wi-Fi, sell on each
 side, reconnect: everything reconciles by itself. No server was ever involved.
 
-> **If peers don't find each other:** allow `node` through the macOS firewall,
-> and avoid "guest" Wi-Fi (it blocks multicast) — a phone hotspot works great.
+> **`peers` vs `linked`.** `peers` = machines *seen* on the network (mDNS).
+> `linked` = machines actually *connected* and replicating. If you see
+> `peers: 2  linked: 0`, they found each other but the data link is blocked —
+> **allow `node` through the firewall on *both* machines**, and avoid "guest" /
+> client-isolated Wi-Fi (a phone hotspot works great).
 
 ## Start a new app
 

@@ -39,7 +39,12 @@ class Nazbu extends EventEmitter {
     this.transport = null
   }
 
+  // Discovered peers (seen via mDNS) — NOT necessarily connected.
   get peers () { return this.cores.size }
+
+  // Actually-connected replication links. If peers > 0 but links == 0, the
+  // machines see each other but the TCP link is blocked (firewall / AP isolation).
+  get links () { return (this.local && this.local.peers) ? this.local.peers.length : 0 }
 
   async start () {
     this.local = this.store.get({ name: 'local' })
@@ -47,6 +52,10 @@ class Nazbu extends EventEmitter {
     this.key = this.local.key.toString('hex')
     this.cores.set(this.key, this.local)
     this.local.on('append', () => this._drain(this.key, this.local))
+    // Real connection health: fires when a replication link opens/closes.
+    const emitLink = () => this.emit('link', this.links)
+    this.local.on('peer-add', emitLink)
+    this.local.on('peer-remove', emitLink)
 
     this.transport = this._createTransport({ myKey: this.key, room: this.room })
     this.transport.events.on('peer-key', hex => this._track(hex))

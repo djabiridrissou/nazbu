@@ -20,20 +20,21 @@ let room
 
 function render () {
   if (AUTO) return
-  process.stdout.write('\r\x1b[K' + `[Nazbu:${name}]  peers:${room.peers}  TOTAL:${total}   (SPACE = +1, q = quit)`)
+  process.stdout.write('\r\x1b[K' + `[Nazbu:${name}]  peers:${room.peers}  linked:${room.links}  TOTAL:${total}   (SPACE = +1, q = quit)`)
 }
 
 async function main () {
   room = new Nazbu({ name, room: process.env.NAZBU_ROOM || 'nazbu-counter' })
   room.on('message', () => { total += 1; render() })
   room.on('peers', render)
+  room.on('link', render)
 
   await room.start()
   console.log(`\n[Nazbu] "${name}" online — no internet needed.\n`)
 
   if (AUTO) {
     setInterval(() => room.send(1), 1500)
-    setInterval(() => console.log(`[${name}] peers=${room.peers} total=${total}`), 1000)
+    setInterval(() => console.log(`[${name}] peers=${room.peers} linked=${room.links} total=${total}`), 1000)
     return
   }
 

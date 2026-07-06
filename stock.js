@@ -41,7 +41,9 @@ const stockOf = sku => BY_SKU[sku].initial + movements[sku]
 function render () {
   if (AUTO) return
   process.stdout.write('\x1b[2J\x1b[H')
-  console.log(`[Nazbu stock — ${name}]   peers: ${room.peers}\n`)
+  const linked = room.links
+  const warn = room.peers > 0 && linked === 0 ? '  ⚠️ seen but NOT connected (firewall/AP?)' : ''
+  console.log(`[Nazbu stock — ${name}]   peers: ${room.peers}   linked: ${linked}${warn}\n`)
   for (const k of Object.keys(CATALOG)) {
     const { sku, name: pname } = CATALOG[k]
     const s = stockOf(sku)
@@ -60,6 +62,7 @@ async function main () {
   room = new Nazbu({ name, room: RM, storage: './.nazbu-stock/' + RM + '/' + name })
   room.on('message', apply)
   room.on('peers', render)
+  room.on('link', render)
   await room.start()
 
   if (AUTO) {
