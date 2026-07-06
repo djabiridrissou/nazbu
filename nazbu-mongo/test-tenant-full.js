@@ -46,11 +46,18 @@ async function main () {
   check('LWW update propagated (price 12)', ((await db2.collection('products').findOne({ _id: pid })) || {}).price === 12)
 
   // 3) append-only ledger doc referencing the product (ObjectId ref must match).
-  const mid = new ObjectId()
-  await db1.collection('stockmovements').insertOne({ _id: mid, tenantId: tenantA, productId: pid, qtyDelta: -1 })
+  const mid = new ObjectId(); const lid = new ObjectId()
+  await db1.collection('stockmovements').insertOne({ _id: mid, tenantId: tenantA, productId: pid, locationId: lid, qtyDelta: -1 })
   await wait(2000)
   const mv = await db2.collection('stockmovements').findOne({ _id: mid })
   check('ledger movement synced with productId ref intact', !!mv && String(mv.productId) === String(pid))
+
+  // 3b) stocklevels is DERIVED from the movement on the boss (not LWW-synced).
+  check('stocklevels derived on boss ($inc from movement)', ((await db2.collection('stocklevels').findOne({ productId: pid, locationId: lid })) || {}).totalQty === -1)
+  // A direct stocklevels write must NOT sync (derived collections are excluded).
+  await db1.collection('stocklevels').insertOne({ _id: new ObjectId(), tenantId: tenantA, productId: new ObjectId(), locationId: new ObjectId(), totalQty: 999 })
+  await wait(1500)
+  check('direct stocklevels write did NOT sync (derived-excluded)', (await db2.collection('stocklevels').countDocuments({ totalQty: 999 })) === 0)
 
   // 4) other tenant never crosses.
   await db1.collection('products').insertOne({ _id: new ObjectId(), tenantId: tenantB, name: 'SECRET' })

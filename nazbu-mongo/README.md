@@ -84,6 +84,31 @@ Both pass. `test-mongo.js` runs two databases as two tills on a replica set and
 verifies movements sync + `StockLevel` converges to the same value (oversell → -1)
 through actual change streams — the exact `MongoLedgerStore` you'd point at Womola.
 
+## Full offline (whole tenant) — plug & play onboarding
+
+To run **all of Womola** offline for a tenant, `MongoTenantStore` replicates that
+tenant's ENTIRE database slice: every collection, mutable ones by last-write-wins,
+append-only ones by union, `stocklevels` re-derived from `stockmovements`, deletes
+propagated, BSON types preserved. All scoped to one tenant.
+
+Onboarding a tenant is one command — never per-tenant code:
+
+```bash
+# on the boss: export the tenant's slice + generate the shop config
+node provision-offline.js --tenant <tenantId> --uri "<boss-mongo-uri>" --db womoladb
+```
+
+It produces `offline-bundles/<tenant>/` with the `seed/` and a ready `nazbu.env`,
+and prints the exact shop + boss steps. In the shop you `seed.js import` the data,
+then run the sidecar with `--full`. Same room + tenant → the shop runs 100% offline
+and reconciles with the boss when the internet is around.
+
+```bash
+node run.js --full --room tenant-<id> --tenant <id> --internet --uri "<shop-mongo-uri>"
+```
+
+Proven end-to-end against real Mongo: `node test-tenant-full.js`.
+
 ## Notes / next
 
 - **Quantities (stock, cash)** should move from last-write-wins to **movement /

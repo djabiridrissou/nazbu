@@ -24,13 +24,21 @@
 const { EJSON } = require('bson')
 
 class MongoTenantStore {
-  constructor ({ db, name, tenantId, ledgerCollections = [], meta = '_nazbu_meta' }) {
+  constructor (opts = {}) {
+    const { db, name, tenantId, ledgerCollections = [], meta = '_nazbu_meta' } = opts
     if (!tenantId) throw new Error('MongoTenantStore requires a tenantId')
     this.db = db
     this.name = name
     this.tenantId = String(tenantId)
     this.ledger = new Set(ledgerCollections)
     this.meta = meta
+    // Derived collections are NOT synced directly (LWW would lose concurrent
+    // deltas). They're recomputed from a ledger instead — e.g. stocklevels is
+    // re-derived from stockmovements via a commutative $inc.
+    this.derived = new Set(opts.derivedCollections || ['stocklevels'])
+    this.projections = opts.projections || {
+      stockmovements: { into: 'stocklevels', key: ['productId', 'locationId'], deltaField: 'qtyDelta', targets: ['totalQty', 'availableQty'] }
+    }
     this.clock = 0
     this._applied = new Set() // "coll:id" we just wrote — skip their own change events
     this._stream = null
@@ -49,6 +57,7 @@ class MongoTenantStore {
       try {
         const coll = ev.ns && ev.ns.coll
         if (!coll || coll === this.meta) return
+        if (this.derived.has(coll)) return // derived (e.g. stocklevels) — recomputed, never synced directly
         if (!ev.documentKey) return
         const id = String(ev.documentKey._id)
         const key = coll + ':' + id
@@ -105,6 +114,17 @@ class MongoTenantStore {
         this._applied.add(ch.key)
         await metaC.insertOne({ _id: ch.key, v: ch.v, by: ch.by })
         await coll.updateOne({ _id: doc._id }, { $setOnInsert: doc }, { upsert: true })
+        // Re-derive any dependent balance (e.g. stocklevels) via a commutative $inc.
+        const proj = this.projections[ch.coll]
+        if (proj) {
+          const filter = {}
+          for (const k of proj.key) filter[k] = doc[k]
+          const inc = {}
+          for (const t of proj.targets) inc[t] = doc[proj.deltaField]
+          await this.db.collection(proj.into).updateOne(
+            filter, { $inc: inc, $set: { lastUpdated: new Date(), tenantId: doc.tenantId } }, { upsert: true }
+          )
+        }
         return true
       }
 
