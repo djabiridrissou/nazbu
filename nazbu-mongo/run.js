@@ -40,9 +40,15 @@ async function main () {
   await bridge.start()
 
   console.log(`\n[nazbu-mongo] bridging ${dbName}.${collection}   room "${room}"   as "${name}"`)
-  console.log(`[nazbu-mongo] transports: LAN${internet ? ' + internet (boss sync)' : ''} — no central server.\n`)
+  console.log(`[nazbu-mongo] transports: LAN${internet ? ' + internet (boss sync)' : ''} — no central server.`)
+  console.log('[nazbu-mongo] watching stock movements — syncing peer-to-peer.\n')
+
+  // Log a fresh line whenever connectivity or movement counts change (so it
+  // shows up in `docker logs`, not just an in-place status line).
+  let last = ''
   setInterval(() => {
-    process.stdout.write(`\r[nazbu-mongo] linked peers: ${nazbu.links}    out: ${bridge.sent}   in: ${bridge.applied}     `)
+    const line = `linked:${nazbu.links}  movements out:${bridge.sent} in:${bridge.applied}`
+    if (line !== last) { last = line; console.log('[nazbu-mongo] ' + line) }
   }, 2000)
 
   process.on('SIGINT', async () => { try { await store.close(); await client.close() } catch (_) {}; process.exit(0) })
