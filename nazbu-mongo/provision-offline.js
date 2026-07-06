@@ -30,6 +30,8 @@ const db = arg('db', 'womoladb')
 // Global (tenant-less) lookup collections to seed whole. The shop's own tenant
 // doc is always included automatically.
 const globals = arg('globals', 'exchangerates,plans')
+// Unique per-shop code → offline document numbers (SLE/PO/…) can't collide.
+const shopCode = arg('shop-code', tenant ? 'S' + tenant.slice(-4) : 'SHOP1')
 const out = arg('out', path.join('offline-bundles', tenant || 'tenant'))
 if (!tenant || !uri) {
   console.error('usage: node provision-offline.js --tenant <tenantId> --uri "<boss-mongo-uri>" [--db womoladb]')
@@ -61,6 +63,8 @@ console.log(`
 ✔ Bundle ready at ${out}/
 
 ── In the SHOP (fresh install) ──────────────────────────────
+0. Set  SHOP_CODE=${shopCode}  in the shop's Womola backend env (womola_be/.env.prod)
+   → offline sale/PO/etc numbers get a shop namespace and never collide. Online is unchanged.
 1. Install Womola locally (Docker) so its Mongo is running.
 2. Load the tenant's data:
      node nazbu-mongo/seed.js import --uri "<shop-mongo-uri>" --db ${db} --in ${seedDir}
