@@ -54,6 +54,17 @@ async function exportTenant () {
     manifest.collections.tenants = own.length
   }
 
+  // Sequence counters are keyed by _id like "SLE-2026-<tenantId>" — seed this
+  // tenant's so the shop keeps continuous numbering. NOT synced back (offline
+  // number generation must use a shop-specific prefix to avoid collisions).
+  try {
+    const ctr = await db.collection('counters').find({ _id: { $regex: tenant + '$' } }).toArray()
+    if (ctr.length) {
+      fs.writeFileSync(path.join(out, 'counters.ejson'), EJSON.stringify(ctr))
+      manifest.collections.counters = ctr.length
+    }
+  } catch (_) {}
+
   // Global lookup collections have no tenantId (shared) — seed them whole, once.
   // They're read-only reference data; the tenant-scoped sidecar won't sync them.
   const globals = (arg('globals', '')).split(',').map(s => s.trim()).filter(Boolean)
