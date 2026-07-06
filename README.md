@@ -107,6 +107,7 @@ even on the same Wi-Fi — essential for multi-tenant apps like a chain of shops
 | `node nazbu.js <name>` | Shared counter — SPACE broadcasts +1 to every machine. |
 | `node chat.js <name>`  | Real-time P2P chat, no server. |
 | `node stock.js <name>` | The Womola model: sales as movement events → offline tills merge with **zero conflicts** and oversell surfaces as negative stock instead of a silently lost sale. |
+| `node map.js [room]`   | Live network map — every machine in the room and whether it's actually connected (🟢) or just seen (🟡). Your first stop for debugging connectivity. |
 
 ## How it works
 

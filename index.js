@@ -34,6 +34,7 @@ class Nazbu extends EventEmitter {
     this._createTransport = opts.transport || createTransport
     this.cores = new Map()   // hexKey -> hypercore
     this.cursor = new Map()  // hexKey -> messages already emitted
+    this.names = new Map()   // hexKey -> friendly name (learned via presence)
     this.local = null
     this.key = null
     this.transport = null
@@ -50,6 +51,7 @@ class Nazbu extends EventEmitter {
     this.local = this.store.get({ name: 'local' })
     await this.local.ready()
     this.key = this.local.key.toString('hex')
+    this.names.set(this.key, this.name)
     this.cores.set(this.key, this.local)
     this.local.on('append', () => this._drain(this.key, this.local))
     // Real connection health: fires when a replication link opens/closes.
@@ -74,6 +76,29 @@ class Nazbu extends EventEmitter {
     await this.local.append(Buffer.from(JSON.stringify({ from: this.name, data })))
   }
 
+  // Presence ping so peers can map key -> name. Internal; not an app message.
+  async _hello () {
+    if (!this.local) return
+    try {
+      await this.local.append(Buffer.from(JSON.stringify({ from: this.name, hello: true })))
+    } catch (_) {}
+  }
+
+  // Live view of the network: who's here and who's actually connected.
+  map () {
+    const rows = []
+    for (const [hex, core] of this.cores) {
+      const self = hex === this.key
+      rows.push({
+        key: hex.slice(0, 8),
+        name: this.names.get(hex) || (self ? this.name : '—'),
+        self,
+        linked: self ? this.links > 0 : !!(core.peers && core.peers.length)
+      })
+    }
+    return rows
+  }
+
   async close () {
     try { if (this.transport) this.transport.stop() } catch (_) {}
     try { await this.store.close() } catch (_) {}
@@ -86,6 +111,7 @@ class Nazbu extends EventEmitter {
     this.cores.set(hex, core)
     core.on('append', () => this._drain(hex, core))
     this.emit('peers', this.peers)
+    this._hello() // let this new peer learn our name
     core.update().then(() => this._drain(hex, core)).catch(() => {})
   }
 
@@ -94,6 +120,8 @@ class Nazbu extends EventEmitter {
     for (let i = from; i < core.length; i++) {
       try {
         const env = JSON.parse((await core.get(i)).toString())
+        if (env && env.from) this.names.set(hex, env.from)
+        if (env && env.hello) continue // presence, not an app message
         this.emit('message', env.data, { from: env.from, key: hex, seq: i })
       } catch (_) {}
     }
