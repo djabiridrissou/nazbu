@@ -1,0 +1,67 @@
+# Two-node smoke test — SEE the full sync locally, no Womola, no 2 machines.
+# Two independent Mongos + two sidecars in the same room. The sidecars find each
+# other over the internet (DHT) and sync stock movements between the two DBs.
+#
+#   docker compose -f deploy/docker-compose.test2.yml up --build
+#
+# Then insert a movement into DB #1 and watch it appear in DB #2:
+#   docker exec -it nazbu_t2_mongo1 mongosh shopdb --eval \
+#     'db.stockmovements.insertOne({productId:ObjectId(),locationId:ObjectId(),qtyDelta:-1,type:"sale"})'
+#   docker exec -it nazbu_t2_mongo2 mongosh shopdb --eval 'db.stockmovements.countDocuments()'
+#
+# sidecar1 logs show `out:1`, sidecar2 logs show `in:1`. Cleanup: down -v
+
+x-mongo: &mongo
+  image: mongo:6
+  command: ["--replSet", "rs0", "--bind_ip_all"]
+  healthcheck:
+    test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping')"]
+    interval: 5s
+    timeout: 5s
+    retries: 10
+
+x-sidecar: &sidecar
+  build:
+    context: ..
+    dockerfile: deploy/Dockerfile.sidecar
+  image: nazbu-sidecar:local
+  environment: &sidecar-env
+    NAZBU_DB: "shopdb"
+    NAZBU_ROOM: "nazbu-2node-smoke-7c3f1a"
+    NAZBU_INTERNET: "1"
+
+services:
+  mongo1:
+    <<: *mongo
+    container_name: nazbu_t2_mongo1
+  mongo2:
+    <<: *mongo
+    container_name: nazbu_t2_mongo2
+
+  mongo1-init:
+    image: mongo:6
+    depends_on: { mongo1: { condition: service_healthy } }
+    restart: "no"
+    entrypoint: ["sh","-c","mongosh --host mongo1 --quiet --eval 'try{rs.status()}catch(e){rs.initiate({_id:\"rs0\",members:[{_id:0,host:\"mongo1:27017\"}]})}'"]
+  mongo2-init:
+    image: mongo:6
+    depends_on: { mongo2: { condition: service_healthy } }
+    restart: "no"
+    entrypoint: ["sh","-c","mongosh --host mongo2 --quiet --eval 'try{rs.status()}catch(e){rs.initiate({_id:\"rs0\",members:[{_id:0,host:\"mongo2:27017\"}]})}'"]
+
+  sidecar1:
+    <<: *sidecar
+    container_name: nazbu_t2_sidecar1
+    depends_on: { mongo1-init: { condition: service_completed_successfully } }
+    environment:
+      <<: *sidecar-env
+      NAZBU_NAME: "till-1"
+      NAZBU_URI: "mongodb://mongo1:27017/?replicaSet=rs0&directConnection=true"
+  sidecar2:
+    <<: *sidecar
+    container_name: nazbu_t2_sidecar2
+    depends_on: { mongo2-init: { condition: service_completed_successfully } }
+    environment:
+      <<: *sidecar-env
+      NAZBU_NAME: "till-2"
+      NAZBU_URI: "mongodb://mongo2:27017/?replicaSet=rs0&directConnection=true"
