@@ -9,10 +9,8 @@
 
 services:
   nazbu-sidecar:
-    build:
-      # Point this at your local clone of the nazbu repo.
-      context: ../nazbu
-      dockerfile: deploy/Dockerfile.sidecar
+    # Build the image once (from the nazbu repo):
+    #   docker build -f deploy/Dockerfile.sidecar -t nazbu-sidecar:local .
     image: nazbu-sidecar:local
     container_name: womola_nazbu
     restart: unless-stopped
@@ -20,9 +18,9 @@ services:
       mongo:
         condition: service_healthy
     environment:
-      # Reach Mongo over the shared compose network. directConnection avoids
-      # replica-set host-discovery issues from inside the container.
-      NAZBU_URI: "mongodb://${MONGO_ROOT_USER}:${MONGO_ROOT_PASSWORD}@mongo:27017/?replicaSet=rs0&authSource=admin&directConnection=true"
+      # Reuse the EXACT same connection string your backend uses
+      # (womola_be/.env.prod -> DB_URI). Guaranteed to work, change streams included.
+      NAZBU_URI: "${NAZBU_URI:?set NAZBU_URI to your backend's DB_URI in nazbu.env}"
       NAZBU_DB: "${NAZBU_DB:-womoladb}"
       NAZBU_ROOM: "${NAZBU_ROOM:?set a unique room per shop, e.g. shop-42}"
       NAZBU_NAME: "${NAZBU_NAME:-shop-server}"

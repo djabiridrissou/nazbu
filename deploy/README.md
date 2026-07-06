@@ -41,13 +41,27 @@ works, do the real deploy below.
    cd nazbu\deploy
    copy nazbu.env.example nazbu.env
    ```
-   Edit `nazbu.env`: set `NAZBU_ROOM` (unique per shop, e.g. `shop-42`) and the
-   `MONGO_ROOT_USER` / `MONGO_ROOT_PASSWORD` (same as Womola's).
-3. Double-click **`start-shop.bat`** (or run it). It builds and starts one
-   container, `womola_nazbu`, and tails its logs.
+   Edit `nazbu.env`:
+   - `NAZBU_URI` = the **same value as your backend's `DB_URI`**
+     (from `womola_be/.env.prod`). This is the one thing that must match.
+   - `NAZBU_ROOM` = a unique id per shop, e.g. `shop-42`.
+3. Double-click **`start-shop.bat`**. It builds the sidecar image, starts one
+   container `womola_nazbu`, and tails its logs.
 
 The other tills need nothing installed — open `http://<server-pc-ip>:<womola-port>`
 in a browser.
+
+Prefer to do it by hand?
+```bash
+# build the image once, from the nazbu repo
+docker build -f deploy/Dockerfile.sidecar -t nazbu-sidecar:local .
+# run it beside Womola (nazbu.env holds NAZBU_URI + NAZBU_ROOM)
+cd ../womola_prod
+docker compose -f docker-compose.prod.yml \
+  -f ../nazbu/deploy/docker-compose.nazbu.yml \
+  --env-file ../nazbu/deploy/nazbu.env up -d nazbu-sidecar
+docker logs -f womola_nazbu
+```
 
 ## Mac / Linux
 
