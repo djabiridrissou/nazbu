@@ -24,7 +24,7 @@ function render () {
 }
 
 async function main () {
-  room = new Nazbu({ name, room: process.env.NAZBU_ROOM || 'nazbu-counter' })
+  room = new Nazbu({ name, room: process.env.NAZBU_ROOM || 'nazbu-counter', internet: process.env.NAZBU_INTERNET === '1' })
   room.on('message', () => { total += 1; render() })
   room.on('peers', render)
   room.on('link', render)

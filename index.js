@@ -20,7 +20,8 @@
 
 const { EventEmitter } = require('events')
 const Corestore = require('corestore')
-const createTransport = require('./transports/lan-mdns')
+const createLanMdns = require('./transports/lan-mdns')
+const createInternetSwarm = require('./transports/internet-swarm')
 
 class Nazbu extends EventEmitter {
   constructor (opts = {}) {
@@ -31,13 +32,17 @@ class Nazbu extends EventEmitter {
     // rooms → zero cross-talk, even on the same LAN.
     this.room = opts.room || 'default'
     this.store = new Corestore(opts.storage || './.nazbu-data/' + this.room + '/' + this.name)
-    this._createTransport = opts.transport || createTransport
+    // Transports connect peers. LAN (mDNS) by default; add internet (Hyperswarm)
+    // for the offline-shop → online-boss leg. `opts.transports` overrides fully.
+    this._transportFactories = opts.transports ||
+      (opts.transport ? [opts.transport]
+        : [createLanMdns, ...(opts.internet ? [createInternetSwarm] : [])])
+    this.transports = []
     this.cores = new Map()   // hexKey -> hypercore
     this.cursor = new Map()  // hexKey -> messages already emitted
     this.names = new Map()   // hexKey -> friendly name (learned via presence)
     this.local = null
     this.key = null
-    this.transport = null
   }
 
   // Discovered peers (seen via mDNS) — NOT necessarily connected.
@@ -59,15 +64,18 @@ class Nazbu extends EventEmitter {
     this.local.on('peer-add', emitLink)
     this.local.on('peer-remove', emitLink)
 
-    this.transport = this._createTransport({ myKey: this.key, room: this.room })
-    this.transport.events.on('peer-key', hex => this._track(hex))
-    this.transport.events.on('connection', (stream, isInitiator) => {
-      const rep = this.store.replicate(isInitiator)
-      rep.on('error', () => {})
-      stream.on('error', () => {})
-      rep.pipe(stream).pipe(rep)
-    })
-    await this.transport.start()
+    for (const factory of this._transportFactories) {
+      const transport = factory({ myKey: this.key, room: this.room })
+      transport.events.on('peer-key', hex => this._track(hex))
+      transport.events.on('connection', (stream, isInitiator) => {
+        const rep = this.store.replicate(isInitiator)
+        rep.on('error', () => {})
+        stream.on('error', () => {})
+        rep.pipe(stream).pipe(rep)
+      })
+      this.transports.push(transport)
+    }
+    await Promise.all(this.transports.map(t => t.start()))
     return this
   }
 
@@ -100,7 +108,7 @@ class Nazbu extends EventEmitter {
   }
 
   async close () {
-    try { if (this.transport) this.transport.stop() } catch (_) {}
+    for (const t of this.transports) { try { t.stop() } catch (_) {} }
     try { await this.store.close() } catch (_) {}
   }
 

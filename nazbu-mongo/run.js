@@ -28,17 +28,19 @@ const dbName = arg('db', 'womoladb')
 const room = arg('room', 'womola-shop')
 const name = arg('name', 'till-' + process.pid)
 const collection = arg('collection', 'stockmovements')
+// --internet also syncs over the DHT (offline shop → online boss), on top of LAN.
+const internet = process.argv.includes('--internet') || process.env.NAZBU_INTERNET === '1'
 
 async function main () {
   const client = await new MongoClient(uri).connect()
   const db = client.db(dbName)
   const store = new MongoLedgerStore({ db, name, collection })
-  const nazbu = new Nazbu({ name, room })
+  const nazbu = new Nazbu({ name, room, internet })
   const bridge = new Bridge({ store, nazbu })
   await bridge.start()
 
   console.log(`\n[nazbu-mongo] bridging ${dbName}.${collection}   room "${room}"   as "${name}"`)
-  console.log('[nazbu-mongo] watching stock movements — peer-to-peer, no server, no internet.\n')
+  console.log(`[nazbu-mongo] transports: LAN${internet ? ' + internet (boss sync)' : ''} — no central server.\n`)
   setInterval(() => {
     process.stdout.write(`\r[nazbu-mongo] linked peers: ${nazbu.links}    out: ${bridge.sent}   in: ${bridge.applied}     `)
   }, 2000)

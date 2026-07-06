@@ -122,10 +122,28 @@ even on the same Wi-Fi — essential for multi-tenant apps like a chain of shops
   the internet.
 - **Data:** each node has its own append-only [Hypercore](https://docs.pears.com/)
   log; state is derived by replaying events.
-- **Transport:** pluggable (`transports/lan-mdns.js`). Same core, drop in a new
-  transport file to connect peers other ways later.
+- **Transport:** pluggable. `transports/lan-mdns.js` (LAN, no internet) and
+  `transports/internet-swarm.js` (Hyperswarm/DHT, over the internet) — use both
+  at once with `new Nazbu({ room, internet: true })`. Same core either way.
 - **Conflicts:** model quantities as **movements/deltas** (commutative → merge for
   free); entity edits as last-write-wins. No coordinator, no primary.
+
+## Offline shop, online boss
+
+The real deployment: a shop with bad internet runs everything locally; the owner,
+online elsewhere, still sees the data.
+
+```
+   SHOP (bad internet)                              BOSS (online)
+   till-1 ─┐                                        ┌────────────┐
+   till-2 ─┼─ LAN (mDNS) ─ always syncing ─┐        │ Nazbu node │
+   till-3 ─┘                                └── internet (DHT) ──┤ (cloud/VPS)│
+                       when internet blinks on, pushes up ───────┴────────────┘
+```
+
+Every node joins the same `room` with `internet: true`. Tills sync over the LAN
+instantly; the moment any internet appears, they also reach the boss's node and
+catch it up. No central server, nothing lost while offline.
 
 ## Roadmap
 

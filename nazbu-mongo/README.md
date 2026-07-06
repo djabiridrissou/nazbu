@@ -39,6 +39,9 @@ Run it on each machine, next to Womola — same `--room` per shop:
 ```bash
 node run.js --room shop-42 --name till-1 \
             --uri "mongodb://127.0.0.1:27017/?replicaSet=rs0" --db womoladb
+
+# add --internet so it also syncs up to the boss's online node when the net blinks on
+node run.js --room shop-42 --name till-1 --internet --uri "mongodb://…" --db womoladb
 ```
 
 It watches the local `StockMovement` ledger and syncs it peer-to-peer over the
