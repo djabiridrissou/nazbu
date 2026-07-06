@@ -10,11 +10,18 @@
   "engines": {
     "node": ">=18"
   },
-  "keywords": ["nazbu", "mongodb", "change-streams", "local-first", "sync", "p2p"],
+  "keywords": [
+    "nazbu",
+    "mongodb",
+    "change-streams",
+    "local-first",
+    "sync",
+    "p2p"
+  ],
   "author": "Djabir",
   "license": "MIT",
   "dependencies": {
-    "mongodb": "^6.8.0",
+    "mongodb": "^6.21.0",
     "nazbu": "github:djabiridrissou/nazbu"
   }
 }

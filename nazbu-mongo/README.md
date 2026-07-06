@@ -62,10 +62,13 @@ Dedup metadata lives in a **separate `_nazbu_meta` collection** — Womola's own
 documents are never modified.
 
 ```bash
-node test-stock.js     # proves this exact scenario over real Nazbu P2P
+node test-stock.js     # proves the scenario over real Nazbu P2P (in-memory store)
+node test-mongo.js     # SAME scenario against a real MongoDB replica set
 ```
 
-Use `MongoLedgerStore` (in stores.js) to run it against Womola's real Mongo.
+Both pass. `test-mongo.js` runs two databases as two tills on a replica set and
+verifies movements sync + `StockLevel` converges to the same value (oversell → -1)
+through actual change streams — the exact `MongoLedgerStore` you'd point at Womola.
 
 ## Notes / next
 

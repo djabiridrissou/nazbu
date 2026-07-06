@@ -1,4 +1,5 @@
 node_modules/
-.nazbu/
+.nazbu*/
+.nz*/
 *.log
 .DS_Store
