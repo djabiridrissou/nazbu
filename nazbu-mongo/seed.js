@@ -46,6 +46,23 @@ async function exportTenant () {
     fs.writeFileSync(path.join(out, c + '.ejson'), EJSON.stringify(docs))
     manifest.collections[c] = docs.length
   }
+
+  // The shop needs its OWN tenant record (in the tenants collection, keyed by _id).
+  const own = await db.collection('tenants').find({ _id: tOid }).toArray()
+  if (own.length) {
+    fs.writeFileSync(path.join(out, 'tenants.ejson'), EJSON.stringify(own))
+    manifest.collections.tenants = own.length
+  }
+
+  // Global lookup collections have no tenantId (shared) — seed them whole, once.
+  // They're read-only reference data; the tenant-scoped sidecar won't sync them.
+  const globals = (arg('globals', '')).split(',').map(s => s.trim()).filter(Boolean)
+  for (const g of globals) {
+    const docs = await db.collection(g).find({}).toArray()
+    if (!docs.length) continue
+    fs.writeFileSync(path.join(out, g + '.ejson'), EJSON.stringify(docs))
+    manifest.collections[g] = docs.length
+  }
   fs.writeFileSync(path.join(out, 'manifest.json'), JSON.stringify(manifest, null, 2))
   await client.close()
   const totalDocs = Object.values(manifest.collections).reduce((a, b) => a + b, 0)
