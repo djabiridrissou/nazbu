@@ -16,6 +16,7 @@ const { MongoClient } = require('mongodb')
 let Nazbu; try { Nazbu = require('nazbu') } catch (_) { Nazbu = require('../index') }
 const Bridge = require('./bridge')
 const { MongoLedgerStore } = require('./stores')
+const { MongoTenantStore } = require('./tenant-sync')
 
 function arg (name, def) {
   const i = process.argv.indexOf('--' + name)
@@ -33,16 +34,25 @@ const collection = arg('collection', 'stockmovements')
 const tenantId = arg('tenant', '') || null
 // --internet also syncs over the DHT (offline shop → online boss), on top of LAN.
 const internet = process.argv.includes('--internet') || process.env.NAZBU_INTERNET === '1'
+// --full = replicate the tenant's ENTIRE database (all collections) for full
+// offline Womola. Without it, only the stock ledger syncs.
+const full = process.argv.includes('--full') || process.env.NAZBU_FULL === '1'
+// Append-only collections (union sync). Everything else is last-write-wins.
+const ledgerCollections = arg('ledger',
+  'stockmovements,sales,salereturns,saleauditlogs,customerledgers,cashevents,accountingevents,transactions,audittrails')
+  .split(',').map(s => s.trim()).filter(Boolean)
 
 async function main () {
   const client = await new MongoClient(uri).connect()
   const db = client.db(dbName)
-  const store = new MongoLedgerStore({ db, name, collection, tenantId })
+  const store = full
+    ? new MongoTenantStore({ db, name, tenantId, ledgerCollections })
+    : new MongoLedgerStore({ db, name, collection, tenantId })
   const nazbu = new Nazbu({ name, room, internet })
   const bridge = new Bridge({ store, nazbu })
   await bridge.start()
 
-  console.log(`\n[nazbu-mongo] bridging ${dbName}.${collection}   room "${room}"   as "${name}"`)
+  console.log(`\n[nazbu-mongo] ${full ? 'FULL tenant DB' : dbName + '.' + collection}   room "${room}"   as "${name}"`)
   console.log(`[nazbu-mongo] tenant scope: ${tenantId || 'ALL (single-tenant only!)'}`)
   console.log(`[nazbu-mongo] transports: LAN${internet ? ' + internet (boss sync)' : ''} — no central server.`)
   console.log('[nazbu-mongo] watching stock movements — syncing peer-to-peer.\n')
