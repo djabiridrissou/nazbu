@@ -19,6 +19,19 @@ the internet is available — no central cloud server required, nothing lost off
 Womola is **never modified**. The sidecar only watches Mongo's `StockMovement`
 ledger and keeps its own `_nazbu_meta` collection.
 
+## Smoke test first (no Womola, no secrets)
+
+Validate the sidecar image + Mongo connection on your Mac in one command:
+
+```bash
+docker compose -f deploy/docker-compose.test.yml up --build
+# expect the sidecar to log: "watching stock movements"
+docker compose -f deploy/docker-compose.test.yml down -v   # cleanup
+```
+
+It spins its own throwaway Mongo replica set — nothing touches Womola. Once this
+works, do the real deploy below.
+
 ## Shop server (Windows)
 
 1. Install **Docker Desktop** and make sure Womola is running

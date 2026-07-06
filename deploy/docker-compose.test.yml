@@ -1,0 +1,51 @@
+# Self-contained smoke test — validates the Nazbu sidecar image + its Mongo
+# connection WITHOUT needing Womola or any secrets. Safe to run on your Mac.
+#
+#   docker compose -f deploy/docker-compose.test.yml up --build
+#
+# Expect the sidecar to log: "watching stock movements".
+# Then, in another terminal, insert a movement and watch it get picked up:
+#   docker exec -it nazbu_test_mongo mongosh testdb --eval \
+#     'db.stockmovements.insertOne({productId:ObjectId(),locationId:ObjectId(),qtyDelta:-1,type:"sale"})'
+#
+# Ctrl+C to stop, then:  docker compose -f deploy/docker-compose.test.yml down -v
+
+services:
+  mongo:
+    image: mongo:6
+    container_name: nazbu_test_mongo
+    command: ["--replSet", "rs0", "--bind_ip_all"]
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping')"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  mongo-init:
+    image: mongo:6
+    depends_on:
+      mongo:
+        condition: service_healthy
+    restart: "no"
+    entrypoint:
+      - sh
+      - -c
+      - >
+        mongosh --host mongo --quiet --eval
+        'try { rs.status() } catch (e) { rs.initiate({_id:"rs0",members:[{_id:0,host:"mongo:27017"}]}) }'
+
+  nazbu-sidecar:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.sidecar
+    image: nazbu-sidecar:local
+    container_name: nazbu_test_sidecar
+    depends_on:
+      mongo-init:
+        condition: service_completed_successfully
+    environment:
+      NAZBU_URI: "mongodb://mongo:27017/?replicaSet=rs0&directConnection=true"
+      NAZBU_DB: "testdb"
+      NAZBU_ROOM: "nazbu-smoke-test"
+      NAZBU_NAME: "test-sidecar"
+      NAZBU_INTERNET: "0"
