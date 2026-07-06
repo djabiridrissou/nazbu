@@ -3,3 +3,5 @@ node_modules/
 .nz*/
 *.log
 .DS_Store
+nazbu.env
+deploy/nazbu.env

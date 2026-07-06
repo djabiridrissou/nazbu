@@ -1,0 +1,35 @@
+# Nazbu sidecar overlay for a Womola shop server.
+#
+# Combine it with Womola's own compose so the sidecar joins the same network and
+# reaches Mongo as the service host "mongo":
+#
+#   docker compose -f docker-compose.prod.yml -f docker-compose.nazbu.yml --env-file nazbu.env up -d
+#
+# It adds ONE container next to Womola. Womola itself is untouched.
+
+services:
+  nazbu-sidecar:
+    build:
+      # Point this at your local clone of the nazbu repo.
+      context: ../nazbu
+      dockerfile: deploy/Dockerfile.sidecar
+    image: nazbu-sidecar:local
+    container_name: womola_nazbu
+    restart: unless-stopped
+    depends_on:
+      mongo:
+        condition: service_healthy
+    environment:
+      # Reach Mongo over the shared compose network. directConnection avoids
+      # replica-set host-discovery issues from inside the container.
+      NAZBU_URI: "mongodb://${MONGO_ROOT_USER}:${MONGO_ROOT_PASSWORD}@mongo:27017/?replicaSet=rs0&authSource=admin&directConnection=true"
+      NAZBU_DB: "${NAZBU_DB:-womoladb}"
+      NAZBU_ROOM: "${NAZBU_ROOM:?set a unique room per shop, e.g. shop-42}"
+      NAZBU_NAME: "${NAZBU_NAME:-shop-server}"
+      NAZBU_INTERNET: "${NAZBU_INTERNET:-1}"
+    networks:
+      - womola_internal
+
+# Reuse Womola's network (declared in docker-compose.prod.yml).
+networks:
+  womola_internal:

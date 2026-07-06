@@ -1,0 +1,23 @@
+# Nazbu ↔ Mongo sidecar — runs beside a Womola deployment.
+# Watches the local StockMovement ledger and syncs it peer-to-peer (LAN + internet).
+# Build context = the root of the nazbu repo:  docker build -f deploy/Dockerfile.sidecar .
+
+FROM node:20-slim
+
+WORKDIR /app
+
+# Core framework deps (corestore, hyperswarm, bonjour-service).
+COPY package.json package-lock.json ./
+RUN npm install --omit=dev
+
+# Framework + bridge sources.
+COPY index.js ./index.js
+COPY transports ./transports
+COPY nazbu-mongo ./nazbu-mongo
+
+# Bridge dep (mongodb driver).
+RUN cd nazbu-mongo && npm install --omit=dev mongodb
+
+# Config comes from env (see deploy/.env.example):
+#   NAZBU_URI, NAZBU_DB, NAZBU_ROOM, NAZBU_NAME, NAZBU_INTERNET
+CMD ["node", "nazbu-mongo/run.js", "--internet"]
