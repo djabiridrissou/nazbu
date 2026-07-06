@@ -34,14 +34,25 @@ node test.js      # insert / conflict / delete propagate, no echo loop
 
 ## Point it at Womola (real Mongo)
 
+Run it on each machine, next to Womola — same `--room` per shop:
+
+```bash
+node run.js --room shop-42 --name till-1 \
+            --uri "mongodb://127.0.0.1:27017/?replicaSet=rs0" --db womoladb
+```
+
+It watches the local `StockMovement` ledger and syncs it peer-to-peer over the
+LAN. Womola keeps running untouched; new stock movements just appear on every
+till. Or wire it yourself:
+
 ```js
 const { MongoClient } = require('mongodb')
 const Nazbu = require('nazbu')
 const Bridge = require('nazbu-mongo')
-const { MongoStore } = require('nazbu-mongo/stores')
+const { MongoLedgerStore } = require('nazbu-mongo/stores')
 
 const client = await new MongoClient(URI).connect()
-const store = new MongoStore({ db: client.db('womoladb'), name: 'shop-till-1' })
+const store = new MongoLedgerStore({ db: client.db('womoladb'), name: 'till-1' })
 const bridge = new Bridge({ store, nazbu: new Nazbu({ name: 'till-1', room: 'shop-42' }) })
 await bridge.start()
 ```
