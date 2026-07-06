@@ -63,8 +63,13 @@ console.log(`
 ✔ Bundle ready at ${out}/
 
 ── In the SHOP (fresh install) ──────────────────────────────
-0. Set  SHOP_CODE=${shopCode}  in the shop's Womola backend env (womola_be/.env.prod)
-   → offline sale/PO/etc numbers get a shop namespace and never collide. Online is unchanged.
+0. In the shop's Womola BACKEND env (womola_be/.env.prod) set:
+     SHOP_CODE=${shopCode}                         # collision-free offline doc numbers
+     LICENSE_ENFORCEMENT=on                         # lock the app when the licence expires
+     LICENSE_SERVER_URL=https://womola.com/api      # phones home to renew when online
+     LICENSE_PUBLIC_KEY="<from scripts/gen-license-keys.sh>"   # verifies keys OFFLINE
+     HUB_KEY=<one-time key from /sa → Licence → Register hub>  # heartbeat auth
+   (Online deployments leave LICENSE_ENFORCEMENT unset = unchanged.)
 1. Install Womola locally (Docker) so its Mongo is running.
 2. Load the tenant's data:
      node nazbu-mongo/seed.js import --uri "<shop-mongo-uri>" --db ${db} --in ${seedDir}
