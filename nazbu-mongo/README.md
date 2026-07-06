@@ -46,6 +46,27 @@ const bridge = new Bridge({ store, nazbu: new Nazbu({ name: 'till-1', room: 'sho
 await bridge.start()
 ```
 
+## Womola stock (the ideal case)
+
+Womola already stores stock as an **append-only ledger** — `StockMovement`
+documents with a signed `qtyDelta`, plus a derived `StockLevel.totalQty`. That's
+the conflict-free model, already in place. So the stock bridge:
+
+- watches **inserts** on `stockmovements`,
+- replicates each movement (dedup by `_id` → union, no last-write-wins),
+- projects it into `StockLevel` with a commutative `$inc`.
+
+Two offline tills selling the same last unit both apply both movements → the
+level goes negative (oversell surfaces) instead of a sale being silently lost.
+Dedup metadata lives in a **separate `_nazbu_meta` collection** — Womola's own
+documents are never modified.
+
+```bash
+node test-stock.js     # proves this exact scenario over real Nazbu P2P
+```
+
+Use `MongoLedgerStore` (in stores.js) to run it against Womola's real Mongo.
+
 ## Notes / next
 
 - **Quantities (stock, cash)** should move from last-write-wins to **movement /
