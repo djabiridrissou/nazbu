@@ -159,12 +159,15 @@ class MockLedger extends EventEmitter {
 // dedups via a SEPARATE `_nazbu_meta` collection (Womola docs untouched), and
 // projects each applied movement into StockLevel with a commutative $inc.
 class MongoLedgerStore {
-  constructor ({ db, name, collection = 'stockmovements', levels = 'stocklevels', meta = '_nazbu_meta' }) {
+  constructor ({ db, name, collection = 'stockmovements', levels = 'stocklevels', meta = '_nazbu_meta', tenantId = null }) {
     this.db = db
     this.name = name
     this.collection = collection
     this.levels = levels
     this.meta = meta
+    // Multi-tenant isolation: only ever watch/sync movements for THIS tenant.
+    // On a multi-tenant Womola, a shop must never see other tenants' data.
+    this.tenantId = tenantId ? String(tenantId) : null
     this._applied = new Set() // ids we just inserted — skip their change events
     this._stream = null
   }
@@ -177,6 +180,8 @@ class MongoLedgerStore {
     this._stream.on('change', ev => {
       const doc = ev.fullDocument
       if (!doc) return
+      // Tenant fence: ignore any movement that isn't ours.
+      if (this.tenantId && String(doc.tenantId) !== this.tenantId) return
       const id = String(doc._id)
       if (this._applied.has(id)) { this._applied.delete(id); return } // our own applied insert
       cb({
@@ -195,6 +200,8 @@ class MongoLedgerStore {
 
   async applyRemote (ch) {
     const { ObjectId } = require('mongodb')
+    // Tenant fence (defense in depth): never write another tenant's movement.
+    if (this.tenantId && ch.doc && ch.doc.tenantId && String(ch.doc.tenantId) !== this.tenantId) return false
     // Dedup across restarts via our own meta collection (never touches Womola docs).
     const seen = await this.db.collection(this.meta).findOne({ _id: 'mv:' + ch.id })
     if (seen) return false

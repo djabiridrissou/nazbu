@@ -28,18 +28,22 @@ const dbName = arg('db', 'womoladb')
 const room = arg('room', 'womola-shop')
 const name = arg('name', 'till-' + process.pid)
 const collection = arg('collection', 'stockmovements')
+// Multi-tenant: scope sync to ONE tenant. REQUIRED on a multi-tenant Womola,
+// or a shop would receive every tenant's data.
+const tenantId = arg('tenant', '') || null
 // --internet also syncs over the DHT (offline shop → online boss), on top of LAN.
 const internet = process.argv.includes('--internet') || process.env.NAZBU_INTERNET === '1'
 
 async function main () {
   const client = await new MongoClient(uri).connect()
   const db = client.db(dbName)
-  const store = new MongoLedgerStore({ db, name, collection })
+  const store = new MongoLedgerStore({ db, name, collection, tenantId })
   const nazbu = new Nazbu({ name, room, internet })
   const bridge = new Bridge({ store, nazbu })
   await bridge.start()
 
   console.log(`\n[nazbu-mongo] bridging ${dbName}.${collection}   room "${room}"   as "${name}"`)
+  console.log(`[nazbu-mongo] tenant scope: ${tenantId || 'ALL (single-tenant only!)'}`)
   console.log(`[nazbu-mongo] transports: LAN${internet ? ' + internet (boss sync)' : ''} — no central server.`)
   console.log('[nazbu-mongo] watching stock movements — syncing peer-to-peer.\n')
 

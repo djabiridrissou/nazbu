@@ -21,6 +21,9 @@ services:
       # Reuse the EXACT same connection string your backend uses
       # (womola_be/.env.prod -> DB_URI). Guaranteed to work, change streams included.
       NAZBU_URI: "${NAZBU_URI:?set NAZBU_URI to your backend's DB_URI in nazbu.env}"
+      # REQUIRED on multi-tenant Womola: the shop's tenantId. Without it a shop
+      # would receive EVERY tenant's data. One tenant per shop server.
+      NAZBU_TENANT: "${NAZBU_TENANT:?set NAZBU_TENANT to this shop's tenantId}"
       NAZBU_DB: "${NAZBU_DB:-womoladb}"
       NAZBU_ROOM: "${NAZBU_ROOM:?set a unique room per shop, e.g. shop-42}"
       NAZBU_NAME: "${NAZBU_NAME:-shop-server}"
