@@ -4,6 +4,10 @@
 
 FROM node:20-slim
 
+# nazbu-mongo depends on `nazbu` via a GitHub URL, so npm needs git to resolve it.
+RUN apt-get update && apt-get install -y --no-install-recommends git \
+    && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 
 # Core framework deps (corestore, hyperswarm, bonjour-service).
