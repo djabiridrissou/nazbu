@@ -37,9 +37,14 @@ const internet = process.argv.includes('--internet') || process.env.NAZBU_INTERN
 // --full = replicate the tenant's ENTIRE database (all collections) for full
 // offline Womola. Without it, only the stock ledger syncs.
 const full = process.argv.includes('--full') || process.env.NAZBU_FULL === '1'
-// Append-only collections (union sync). Everything else is last-write-wins.
-const ledgerCollections = arg('ledger',
-  'stockmovements,sales,salereturns,saleauditlogs,customerledgers,cashevents,accountingevents,transactions,audittrails')
+// Ledger = insert-only/union collections. ONLY stockmovements needs this: it's
+// genuinely append-only AND drives the commutative stocklevels projection. Every
+// other collection (sales, transactions, accountingevents, salereturns, …) gets
+// UPDATED in place by the app (void, mark-paid, post-to-accounting …), and ledger
+// mode treats docs as immutable → those updates never sync. So everything except
+// stockmovements is last-write-wins, which propagates updates. Keeping this list
+// minimal is also future-proof: a newly-mutated collection just works.
+const ledgerCollections = arg('ledger', 'stockmovements')
   .split(',').map(s => s.trim()).filter(Boolean)
 
 async function main () {

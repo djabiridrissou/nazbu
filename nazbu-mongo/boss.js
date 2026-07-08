@@ -37,8 +37,11 @@ const URI = process.env.NAZBU_URI || 'mongodb://127.0.0.1:27017/?replicaSet=rs0'
 const DB = process.env.NAZBU_DB || 'womoladb'
 const SCAN_MS = Number(process.env.BOSS_SCAN_MS || 120000)
 const FORCED = (process.env.BOSS_TENANTS || '').split(',').map(s => s.trim()).filter(Boolean)
-const LEDGER = (process.env.NAZBU_LEDGER ||
-  'stockmovements,sales,salereturns,saleauditlogs,customerledgers,cashevents,accountingevents,transactions,audittrails')
+// Ledger = insert-only/union. ONLY stockmovements needs it (append-only + drives
+// the stocklevels projection). Every other collection is mutated in place by the
+// app, and ledger mode treats docs as immutable → updates would never sync. So
+// everything else is last-write-wins (propagates updates). Keep this minimal.
+const LEDGER = (process.env.NAZBU_LEDGER || 'stockmovements')
   .split(',').map(s => s.trim()).filter(Boolean)
 
 const running = new Map() // tenantId -> { store, nazbu, bridge }
