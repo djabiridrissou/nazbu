@@ -1,0 +1,48 @@
+# Nazbu BOSS — ONE dynamic, multi-tenant node for the CLOUD (womola.com VPS).
+#
+# Run it ONCE. It auto-serves EVERY tenant that has an active offline licence
+# (discovered from the cloud DB) and syncs each shop in real time over the DHT.
+# A NEW client that installs Womola Server + gets a licence is picked up
+# automatically on the next scan — no per-client setup on the VPS. A terminated
+# licence is dropped automatically.
+#
+# ── One-time setup on the VPS ────────────────────────────────────────────────
+# 1) Get the image (from the nazbu repo root):
+#      git clone https://github.com/djabiridrissou/nazbu && cd nazbu
+#      docker build -f deploy/Dockerfile.sidecar -t nazbu-sidecar:local .
+#
+# 2) Find your Womola docker network:
+#      docker network ls | grep womola          # e.g. womola-prod_womola_internal
+#
+# 3) Run the boss (NAZBU_URI = your backend's DB_URI from womola_be/.env.prod —
+#    it already has the right user/password/host "mongo"/replicaSet):
+#      WOMOLA_NETWORK=womola-prod_womola_internal \
+#      NAZBU_URI='mongodb://USER:PASS@mongo:27017/womoladb?replicaSet=rs0&authSource=admin' \
+#      docker compose -f deploy/docker-compose.boss.yml up -d
+#
+#    Watch it:  docker logs -f womola_nazbu_boss
+# ─────────────────────────────────────────────────────────────────────────────
+
+services:
+  nazbu-boss:
+    image: nazbu-sidecar:local
+    container_name: womola_nazbu_boss
+    restart: always
+    command: ["node", "nazbu-mongo/boss.js"]
+    environment:
+      # Your backend's DB_URI (auth + host "mongo" + replicaSet). Change streams
+      # need the replica set — the cloud Mongo already runs --replSet rs0.
+      NAZBU_URI: "${NAZBU_URI:?set NAZBU_URI to your backend DB_URI}"
+      NAZBU_DB: "${NAZBU_DB:-womoladb}"
+      # How often to re-scan the licence list for new/terminated tenants.
+      BOSS_SCAN_MS: "${BOSS_SCAN_MS:-120000}"
+      # Optional: force an exact tenant set (skips licence discovery) for testing.
+      BOSS_TENANTS: "${BOSS_TENANTS:-}"
+    networks:
+      - womola
+
+# Join the existing Womola stack network so "mongo" resolves.
+networks:
+  womola:
+    external: true
+    name: "${WOMOLA_NETWORK:?set WOMOLA_NETWORK to your womola docker network (docker network ls | grep womola)}"
