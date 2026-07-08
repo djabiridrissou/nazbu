@@ -21,8 +21,7 @@
   "author": "Djabir",
   "license": "MIT",
   "dependencies": {
-    "mongodb": "^6.21.0",
-    "nazbu": "github:djabiridrissou/nazbu"
+    "mongodb": "^6.21.0"
   },
   "bin": {
     "nazbu-mongo": "run.js"
