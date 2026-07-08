@@ -50,6 +50,17 @@ class MongoTenantStore {
     return this.clock
   }
 
+  // Does this document belong to our tenant? Most collections carry a `tenantId`
+  // field, but the `tenants` collection identifies the tenant by its own `_id`
+  // (there is no self-referential tenantId). Without this, every tenant-level
+  // setting (POS config, discountMode, receipt/branding on the tenant doc) is
+  // dropped by the fence and never syncs.
+  _matchesTenant (coll, doc) {
+    if (!doc) return false
+    if (coll === 'tenants') return String(doc._id) === this.tenantId
+    return String(doc.tenantId) === this.tenantId
+  }
+
   onLocalChange (cb) {
     this._stream = this.db.watch([], { fullDocument: 'updateLookup' })
     this._stream.on('error', () => {})
@@ -78,13 +89,29 @@ class MongoTenantStore {
 
         const doc = ev.fullDocument
         if (!doc) return
-        if (String(doc.tenantId) !== this.tenantId) return // other tenant — fence
+        if (!this._matchesTenant(coll, doc)) return // other tenant — fence
 
-        const mode = this.ledger.has(coll) ? 'ledger' : 'lww'
         const v = this._tick()
         // Track our OWN version so we can reject older remote writes (LWW) and
         // so deletes of locally-created docs still propagate.
         await metaC.updateOne({ _id: key }, { $set: { v, by: this.name } }, { upsert: true })
+
+        // The `tenants` doc is co-owned — the shop edits settings while the cloud
+        // owns billing/plan. Sync only the CHANGED fields (a patch) so a stale copy
+        // can't clobber the other side's fields via a whole-doc replace. Each side
+        // only ever WRITES its own fields, so field-level LWW is conflict-free.
+        // Everything else is a wholly shop-owned entity → whole-doc LWW is fine.
+        if (coll === 'tenants' && ev.operationType === 'update' && ev.updateDescription) {
+          cb({
+            coll, id, key, op: 'patch', v, by: this.name,
+            idE: EJSON.stringify(ev.documentKey._id),
+            setE: EJSON.stringify(ev.updateDescription.updatedFields || {}),
+            unset: ev.updateDescription.removedFields || [],
+          })
+          return
+        }
+
+        const mode = this.ledger.has(coll) ? 'ledger' : 'lww'
         cb({ coll, id, key, op: 'upsert', mode, docE: EJSON.stringify(doc), v, by: this.name })
       } catch (_) {}
     })
@@ -104,9 +131,31 @@ class MongoTenantStore {
         return true
       }
 
+      if (ch.op === 'patch') {
+        // Field-level LWW for the co-owned tenants doc: apply only the changed
+        // fields, never a whole-doc replace (so we don't clobber the other side's
+        // fields). Version-guarded like any LWW write.
+        const cur = await metaC.findOne({ _id: ch.key })
+        if (cur && (cur.v > ch.v || (cur.v === ch.v && String(cur.by) >= String(ch.by)))) return false
+        const set = EJSON.parse(ch.setE || '{}')
+        delete set._id; delete set.tenantId // never let a patch move identity
+        const update = {}
+        if (Object.keys(set).length) update.$set = set
+        if (Array.isArray(ch.unset) && ch.unset.length) {
+          update.$unset = {}
+          for (const f of ch.unset) update.$unset[f] = ''
+        }
+        this._applied.add(ch.key)
+        await metaC.updateOne({ _id: ch.key }, { $set: { v: ch.v, by: ch.by } }, { upsert: true })
+        if (update.$set || update.$unset) {
+          await this.db.collection(ch.coll).updateOne({ _id: EJSON.parse(ch.idE) }, update)
+        }
+        return true
+      }
+
       const doc = EJSON.parse(ch.docE)
       // Tenant fence (defense in depth).
-      if (String(doc.tenantId) !== this.tenantId) return false
+      if (!this._matchesTenant(ch.coll, doc)) return false
 
       if (ch.mode === 'ledger') {
         const seen = await metaC.findOne({ _id: ch.key })
