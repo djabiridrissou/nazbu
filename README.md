@@ -12,6 +12,8 @@
 [![offline-first](https://img.shields.io/badge/offline--first-yes-e3b341.svg)](#how-it-works)
 [![stars](https://img.shields.io/github/stars/djabiridrissou/nazbu?style=social)](https://github.com/djabiridrissou/nazbu/stargazers)
 
+**[→ Live site &amp; positioning](https://djabiridrissou.github.io/nazbu/)**
+
 </div>
 
 ---
