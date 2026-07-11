@@ -1,20 +1,25 @@
 {
   "name": "nazbu",
-  "version": "0.0.1",
-  "description": "Deploy any app to a local network, one click. No server. No internet. Real-time P2P sync.",
+  "version": "0.1.0",
+  "description": "Local-first sync engine — keep your existing database (Postgres, MongoDB) running offline and in sync across every device, peer-to-peer, with no server.",
   "keywords": [
     "p2p",
     "local-first",
     "offline-first",
+    "sync",
+    "sync-engine",
+    "database",
+    "postgres",
+    "postgresql",
+    "mongodb",
+    "cdc",
     "lan",
     "mdns",
-    "hypercore",
     "peer-to-peer",
-    "sync",
-    "crdt",
-    "no-server"
+    "no-server",
+    "crdt"
   ],
-  "homepage": "https://github.com/djabiridrissou/nazbu#readme",
+  "homepage": "https://djabiridrissou.github.io/nazbu/",
   "bugs": {
     "url": "https://github.com/djabiridrissou/nazbu/issues"
   },
@@ -24,11 +29,37 @@
   },
   "author": "Djabir",
   "license": "MIT",
-  "main": "index.js",
-  "bin": {
-    "nazbu": "nazbu.js"
-  },
   "type": "commonjs",
+  "main": "index.js",
+  "exports": {
+    ".": "./index.js",
+    "./postgres": "./nazbu-postgres/store.js",
+    "./mongo": "./nazbu-mongo/index.js",
+    "./bridge": "./nazbu-mongo/bridge.js",
+    "./package.json": "./package.json"
+  },
+  "bin": {
+    "nazbu": "nazbu.js",
+    "nazbu-postgres": "nazbu-postgres/run.js",
+    "nazbu-mongo": "nazbu-mongo/run.js"
+  },
+  "files": [
+    "index.js",
+    "adapters.js",
+    "nazbu.js",
+    "chat.js",
+    "stock.js",
+    "map.js",
+    "transports/",
+    "nazbu-mongo/index.js",
+    "nazbu-mongo/bridge.js",
+    "nazbu-mongo/stores.js",
+    "nazbu-mongo/tenant-sync.js",
+    "nazbu-mongo/run.js",
+    "nazbu-postgres/store.js",
+    "nazbu-postgres/run.js",
+    "assets/"
+  ],
   "engines": {
     "node": ">=18"
   },
@@ -41,5 +72,15 @@
     "bonjour-service": "^1.2.1",
     "corestore": "^6.18.4",
     "hyperswarm": "^4.17.0"
+  },
+  "peerDependencies": {
+    "pg": "^8",
+    "mongodb": ">=5",
+    "bson": ">=5"
+  },
+  "peerDependenciesMeta": {
+    "pg": { "optional": true },
+    "mongodb": { "optional": true },
+    "bson": { "optional": true }
   }
 }

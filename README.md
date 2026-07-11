@@ -24,6 +24,31 @@
 
 ---
 
+## Sync a whole database — one line
+
+Point Nazbu at the database you already have. It keeps that database offline-first and in sync
+across every peer, with no server and no app change.
+
+```js
+const { Pool } = require('pg')
+const Nazbu = require('nazbu')
+
+const room = new Nazbu({
+  db: new Pool({ connectionString: 'postgres://…/mydb' }),  // or a mongodb Db
+  room: 'hospital-42',
+  internet: true,
+  policies: { sales: 'append-only', '*': 'last-writer-wins' }
+})
+
+await room.start()   // that database is now offline-first, on every node
+```
+
+Adapters: **[PostgreSQL](nazbu-postgres/)** and **[MongoDB](nazbu-mongo/)** ship today (`require('nazbu/postgres')`,
+`require('nazbu/mongo')`), or run them as a zero-code sidecar (`npx nazbu-postgres --room … --uri …`).
+More databases are rolling out.
+
+---
+
 Install the app on each machine, put them on the same access point, and everyone
 is online together — instantly, with **no central server and no internet**
 connection anywhere.
