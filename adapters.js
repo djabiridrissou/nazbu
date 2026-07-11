@@ -38,7 +38,21 @@ function resolveStore (db, opts = {}) {
     })
   }
 
-  throw new Error('Nazbu: unrecognised `db`. Pass a pg Pool or a mongodb Db.')
+  // mysql2/promise Pool — has .getConnection() and .query()
+  if (db && typeof db.getConnection === 'function' && typeof db.query === 'function') {
+    let MySqlStore
+    try { ({ MySqlStore } = require('./nazbu-mysql/store')) }
+    catch (e) { throw new Error('Nazbu: MySQL adapter needs the `mysql2` driver (npm i mysql2) — ' + e.message) }
+    return new MySqlStore({
+      pool: db,
+      name: opts.name,
+      policies: opts.policies || {},
+      tables: opts.tables || null,
+      exclude: opts.exclude || []
+    })
+  }
+
+  throw new Error('Nazbu: unrecognised `db`. Pass a pg Pool, a mysql2 Pool, or a mongodb Db.')
 }
 
 module.exports = { resolveStore }

@@ -1,0 +1,13 @@
+{
+  "name": "nazbu-mysql",
+  "version": "0.0.1",
+  "description": "MySQL / MariaDB adapter for Nazbu — sync a live MySQL database peer-to-peer, offline, with no server.",
+  "keywords": ["nazbu", "mysql", "mariadb", "sync", "offline-first", "p2p", "local-first", "cdc"],
+  "license": "MIT",
+  "author": "Djabir",
+  "main": "store.js",
+  "bin": { "nazbu-mysql": "run.js" },
+  "scripts": { "test": "node test-mysql.js" },
+  "dependencies": { "mysql2": "^3.9.0" },
+  "engines": { "node": ">=18" }
+}

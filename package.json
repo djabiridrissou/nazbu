@@ -35,6 +35,7 @@
   "exports": {
     ".": { "types": "./index.d.ts", "default": "./index.js" },
     "./postgres": { "types": "./nazbu-postgres/store.d.ts", "default": "./nazbu-postgres/store.js" },
+    "./mysql": { "types": "./nazbu-mysql/store.d.ts", "default": "./nazbu-mysql/store.js" },
     "./mongo": { "types": "./nazbu-mongo/index.d.ts", "default": "./nazbu-mongo/index.js" },
     "./bridge": "./nazbu-mongo/bridge.js",
     "./package.json": "./package.json"
@@ -42,6 +43,7 @@
   "bin": {
     "nazbu": "nazbu.js",
     "nazbu-postgres": "nazbu-postgres/run.js",
+    "nazbu-mysql": "nazbu-mysql/run.js",
     "nazbu-mongo": "nazbu-mongo/run.js"
   },
   "files": [
@@ -62,6 +64,9 @@
     "nazbu-postgres/store.js",
     "nazbu-postgres/store.d.ts",
     "nazbu-postgres/run.js",
+    "nazbu-mysql/store.js",
+    "nazbu-mysql/store.d.ts",
+    "nazbu-mysql/run.js",
     "assets/"
   ],
   "engines": {
@@ -79,11 +84,13 @@
   },
   "peerDependencies": {
     "pg": "^8",
+    "mysql2": "^3",
     "mongodb": ">=5",
     "bson": ">=5"
   },
   "peerDependenciesMeta": {
     "pg": { "optional": true },
+    "mysql2": { "optional": true },
     "mongodb": { "optional": true },
     "bson": { "optional": true }
   }
