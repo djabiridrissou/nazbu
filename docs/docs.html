@@ -1,0 +1,444 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nazbu — Documentation</title>
+<meta name="description" content="Nazbu documentation — install it, sync your first app, and connect devices across networks with no server.">
+<meta name="theme-color" content="#08090D">
+<style>
+  :root{
+    --ink:#08090D; --ink-2:#0C0E15; --ink-3:#11141D;
+    --line:rgba(124,144,176,.13); --line-2:rgba(124,144,176,.26);
+    --fg:#EDF0F6; --fg-dim:#9AA3B6; --fg-faint:#565F73;
+    --mesh:#45E9B0; --mesh-2:#86f0d4; --signal:#F4B860;
+    --sans:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --mono:ui-monospace,"SF Mono","JetBrains Mono","Cascadia Code",Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{margin:0;background:var(--ink);color:var(--fg);font-family:var(--sans);line-height:1.68;-webkit-font-smoothing:antialiased}
+  a{color:var(--mesh);text-decoration:none}
+  a:hover{text-decoration:underline}
+  ::selection{background:rgba(69,233,176,.26);color:#fff}
+  code{font-family:var(--mono)}
+
+  .nav{position:sticky;top:0;z-index:60;background:rgba(8,9,13,.82);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+  .nav-in{max-width:1200px;margin:0 auto;padding:12px 24px;display:flex;align-items:center;gap:16px}
+  .brand{font-family:var(--mono);font-weight:700;letter-spacing:.26em;font-size:.84rem;color:var(--fg);display:flex;align-items:center;gap:10px}
+  .brand:hover{text-decoration:none}
+  .bdot{width:8px;height:8px;border-radius:50%;background:var(--mesh);box-shadow:0 0 12px var(--mesh)}
+  .nav-links{margin-left:auto;display:flex;gap:6px;align-items:center}
+  .nav-links a{font-size:.9rem;color:var(--fg-dim);padding:8px 13px;border-radius:9px}
+  .nav-links a:hover{color:var(--fg);background:var(--ink-3);text-decoration:none}
+  .nav-links a.on{color:var(--mesh)}
+  .burger{display:none;background:none;border:1px solid var(--line-2);color:var(--fg);border-radius:9px;padding:7px 11px;cursor:pointer;font-size:1rem}
+
+  .layout{display:grid;grid-template-columns:256px 1fr;max-width:1200px;margin:0 auto}
+  .side{position:sticky;top:49px;height:calc(100vh - 49px);overflow-y:auto;padding:26px 18px 70px;border-right:1px solid var(--line)}
+  .grp{font-family:var(--mono);font-size:.68rem;letter-spacing:.16em;text-transform:uppercase;color:var(--fg-faint);margin:24px 10px 8px}
+  .grp:first-child{margin-top:4px}
+  .side a{display:block;padding:6px 12px;border-radius:8px;color:var(--fg-dim);font-size:.91rem}
+  .side a:hover{color:var(--fg);background:var(--ink-3);text-decoration:none}
+  .side a.active{color:var(--mesh);background:rgba(69,233,176,.09);font-weight:600}
+  .side::-webkit-scrollbar{width:8px}.side::-webkit-scrollbar-thumb{background:#1b2230;border-radius:8px}
+
+  .content{padding:46px 44px 90px;max-width:840px;min-width:0}
+  article.doc{display:block}
+  article.doc[hidden]{display:none}
+  .kicker{font-family:var(--mono);font-size:.72rem;letter-spacing:.16em;text-transform:uppercase;color:var(--mesh);margin:0 0 12px}
+  .doc h1{font-size:clamp(1.9rem,4vw,2.35rem);font-weight:800;letter-spacing:-.025em;line-height:1.08;margin:0 0 14px;text-wrap:balance}
+  .doc .intro{font-size:1.12rem;color:var(--fg-dim);margin:0 0 8px;max-width:64ch}
+  .doc h2{font-size:1.3rem;font-weight:720;letter-spacing:-.01em;margin:40px 0 12px}
+  .doc h3{font-size:1.03rem;font-weight:680;margin:26px 0 8px}
+  .doc p{margin:0 0 1em;color:var(--fg-dim);max-width:68ch}
+  .doc ul{margin:0 0 1.1em;padding-left:20px;color:var(--fg-dim);max-width:66ch}
+  .doc li{margin:.35em 0}
+  .doc strong{color:var(--fg);font-weight:640}
+  .doc p code,.doc li code,.doc td code{font-size:.86em;background:var(--ink-3);padding:2px 6px;border-radius:5px;color:var(--mesh-2);white-space:nowrap}
+
+  .codewrap{margin:18px 0 22px;border:1px solid var(--line-2);border-radius:12px;overflow:hidden;background:var(--ink-2)}
+  .codebar{display:flex;align-items:center;gap:8px;padding:10px 15px;border-bottom:1px solid var(--line)}
+  .codebar i{width:10px;height:10px;border-radius:50%;background:#2a3346}
+  .codebar i:nth-child(1){background:#ff5f57}.codebar i:nth-child(2){background:#febc2e}.codebar i:nth-child(3){background:#28c840}
+  .codebar span{margin-left:8px;font-family:var(--mono);font-size:.75rem;color:var(--fg-faint)}
+  pre{margin:0;padding:18px 20px;overflow-x:auto;font-family:var(--mono);font-size:.85rem;line-height:1.7;color:var(--fg)}
+  .cmt{color:var(--fg-faint)}.kw{color:#8fb8ff}.str{color:var(--mesh)}.fn{color:var(--signal)}.num{color:#e0a0ff}
+
+  .callout{border-left:3px solid var(--mesh);background:var(--ink-2);padding:14px 18px;border-radius:0 10px 10px 0;margin:20px 0;color:var(--fg-dim);font-size:.95rem}
+  .callout.warn{border-color:var(--signal)}
+  .callout b{color:var(--fg)}
+
+  .tbl{margin:18px 0 22px;overflow-x:auto;border:1px solid var(--line);border-radius:12px}
+  table{border-collapse:collapse;width:100%;min-width:520px;font-size:.9rem}
+  th{text-align:left;font-family:var(--mono);font-size:.76rem;font-weight:600;color:var(--fg-dim);padding:12px 14px;border-bottom:1px solid var(--line-2);background:var(--ink-2)}
+  td{padding:11px 14px;border-bottom:1px solid var(--line);color:var(--fg-dim);vertical-align:top}
+  tr:last-child td{border-bottom:0}
+
+  .prevnext{display:flex;justify-content:space-between;gap:14px;margin-top:56px;padding-top:26px;border-top:1px solid var(--line)}
+  .pn{flex:1 1 0;max-width:49%;border:1px solid var(--line);border-radius:12px;padding:13px 17px;color:var(--fg);transition:.15s}
+  .pn:hover{border-color:var(--line-2);text-decoration:none;background:var(--ink-2)}
+  .pn .d{font-family:var(--mono);font-size:.68rem;text-transform:uppercase;letter-spacing:.14em;color:var(--fg-faint)}
+  .pn .t{font-weight:660;margin-top:3px;color:var(--fg)}
+  .pn.next{text-align:right}
+
+  .scrim{display:none}
+  @media(max-width:880px){
+    .burger{display:inline-block}
+    .layout{display:block}
+    .side{position:fixed;top:49px;left:0;width:280px;transform:translateX(-100%);transition:transform .22s ease;background:var(--ink);z-index:55}
+    body.side-open .side{transform:none}
+    body.side-open .scrim{display:block;position:fixed;inset:49px 0 0;background:rgba(0,0,0,.5);z-index:54}
+    .content{padding:34px 24px 80px}
+  }
+</style>
+</head>
+<body>
+
+<nav class="nav"><div class="nav-in">
+  <button class="burger" id="burger" aria-label="Menu">☰</button>
+  <a class="brand" href="index.html"><span class="bdot"></span>NAZBU</a>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <a href="docs.html" class="on">Docs</a>
+    <a href="https://github.com/djabiridrissou/nazbu">GitHub</a>
+  </div>
+</div></nav>
+
+<div class="scrim" id="scrim"></div>
+<div class="layout">
+  <aside class="side" id="side">
+    <div class="grp">Getting started</div>
+    <a href="#introduction">Introduction</a>
+    <a href="#installation">Installation</a>
+    <a href="#quick-start">Quick start</a>
+    <div class="grp">Core concepts</div>
+    <a href="#how-sync-works">How sync works</a>
+    <a href="#rooms">Rooms &amp; isolation</a>
+    <a href="#networking">Peers &amp; networking</a>
+    <a href="#conflicts">Conflict handling</a>
+    <a href="#files">Files &amp; data</a>
+    <div class="grp">Databases</div>
+    <a href="#adapter-mongodb">MongoDB adapter</a>
+    <a href="#adapter-your-db">Your database</a>
+    <div class="grp">Guides</div>
+    <a href="#guide-multitenant">Multi-tenant apps</a>
+    <a href="#guide-offline">Offline-first shops</a>
+    <div class="grp">API reference</div>
+    <a href="#api-nazbu">new Nazbu(options)</a>
+    <a href="#api-events">Events</a>
+    <a href="#api-methods">Methods &amp; properties</a>
+  </aside>
+
+  <main class="content">
+
+    <article class="doc" id="introduction" data-title="Introduction">
+      <p class="kicker">Getting started</p>
+      <h1>Introduction</h1>
+      <p class="intro">Nazbu is a local-first sync engine. Point it at the data your app already uses, and your app keeps working on every device — with or without internet, and with no server.</p>
+      <p>Most apps treat the internet as a lifeline: the connection drops and everything freezes. Nazbu flips that. Every device holds its own full copy of the data, talks to the other devices directly, and everyone converges automatically the moment they can reach each other again — on the same network or across the internet.</p>
+      <h2>What you get</h2>
+      <ul>
+        <li><strong>Offline by default</strong> — the app runs entirely on the device, no round-trip required.</li>
+        <li><strong>No server</strong> — devices sync peer-to-peer. A cloud node, if you want one, is just another peer.</li>
+        <li><strong>Across networks</strong> — peers on different networks connect straight through, not just over the same Wi-Fi.</li>
+        <li><strong>Durable &amp; ordered</strong> — every change is stored locally and replays in order when a peer reconnects.</li>
+        <li><strong>Isolated</strong> — a <em>room</em> keeps each app, site or tenant’s data cleanly apart.</li>
+      </ul>
+      <div class="callout"><b>Where it fits.</b> If your app has a real database and real users on shaky or no connectivity — a shop, a warehouse, a clinic, a field team — Nazbu keeps it running without a rewrite.</div>
+    </article>
+
+    <article class="doc" id="installation" data-title="Installation" hidden>
+      <p class="kicker">Getting started</p>
+      <h1>Installation</h1>
+      <p class="intro">Nazbu runs on Node.js 18 or newer. Add it to the project you already have.</p>
+      <div class="codewrap"><div class="codebar"><i></i><i></i><i></i><span>terminal</span></div>
+<pre><span class="cmt"># in your existing app</span>
+npm i nazbu</pre></div>
+      <p>That’s the whole install for a Node app. Nothing else to run — no broker, no daemon, no account.</p>
+      <h2>Other stacks</h2>
+      <p>First-class packages for more ecosystems are rolling out, so the same engine reaches whatever you build with:</p>
+      <div class="tbl"><table>
+        <tr><th>Stack</th><th>Install</th></tr>
+        <tr><td>Node.js</td><td><code>npm i nazbu</code></td></tr>
+        <tr><td>Python</td><td><code>pip install nazbu</code></td></tr>
+        <tr><td>PHP / Laravel</td><td><code>composer require nazbu/nazbu</code></td></tr>
+        <tr><td>Go</td><td><code>go get nazbu.dev/nazbu</code></td></tr>
+        <tr><td>Rust</td><td><code>cargo add nazbu</code></td></tr>
+      </table></div>
+      <div class="callout warn"><b>Today.</b> The Node.js package is the one that ships now and powers production. The others are on the roadmap — the sync core and wire format are the same across all of them.</div>
+    </article>
+
+    <article class="doc" id="quick-start" data-title="Quick start" hidden>
+      <p class="kicker">Getting started</p>
+      <h1>Quick start</h1>
+      <p class="intro">A name, a room, and you’re syncing. Run this on two machines with the same room and they find each other and share history automatically.</p>
+      <div class="codewrap"><div class="codebar"><i></i><i></i><i></i><span>app.js</span></div>
+<pre><span class="kw">const</span> Nazbu = <span class="fn">require</span>(<span class="str">'nazbu'</span>)
+
+<span class="kw">const</span> room = <span class="kw">new</span> <span class="fn">Nazbu</span>({ name: <span class="str">'till-1'</span>, room: <span class="str">'shop-42'</span> })
+
+<span class="cmt">// fires for every message — from other devices AND your own</span>
+room.<span class="fn">on</span>(<span class="str">'message'</span>, (data, meta) =&gt; {
+  console.<span class="fn">log</span>(meta.from, data)
+})
+
+room.<span class="fn">on</span>(<span class="str">'peers'</span>, (count) =&gt; console.<span class="fn">log</span>(<span class="str">'peers:'</span>, count))
+
+<span class="kw">await</span> room.<span class="fn">start</span>()
+
+room.<span class="fn">send</span>({ type: <span class="str">'sale'</span>, total: <span class="num">4500</span> })</pre></div>
+      <h2>What just happened</h2>
+      <ul>
+        <li><code>name</code> is this device’s friendly label; <code>room</code> is the group it syncs with.</li>
+        <li><code>start()</code> begins discovery and replicates any history that already exists.</li>
+        <li><code>send()</code> appends a message to this device’s log and broadcasts it — even offline, it ships the moment a peer appears.</li>
+        <li>Because <code>message</code> also fires for your own sends, a brand-new device replays the full history when it joins.</li>
+      </ul>
+      <div class="callout"><b>Try it.</b> Copy the file to a second machine, keep the same <code>room</code>, change the <code>name</code>, and run both. Send from one — it shows up on the other. Pull the network cable, keep sending, plug it back in: they reconcile on their own.</div>
+    </article>
+
+    <article class="doc" id="how-sync-works" data-title="How sync works" hidden>
+      <p class="kicker">Core concepts</p>
+      <h1>How sync works</h1>
+      <p class="intro">Every device keeps a durable, append-only log of its own changes. Peers replicate each other’s logs, so everyone ends up with the same history — in the same order.</p>
+      <h2>Append, don’t overwrite</h2>
+      <p>When you call <code>send()</code>, Nazbu appends the message to this device’s log. Logs are never edited in place, only extended. That’s what makes reconnection safe: a peer that was away simply receives the entries it missed and appends them.</p>
+      <h2>Replay is history</h2>
+      <p>The <code>message</code> event fires for <em>every</em> entry, including your own and everything that predates a new peer joining. A device that comes online for the first time replays the whole story and arrives at the exact same state as everyone else.</p>
+      <h2>Durable and offline-safe</h2>
+      <p>Because each log lives on disk locally, an app keeps working with no peers at all. Changes queue up and flow out the instant another device is reachable — same room, same network or a different one.</p>
+      <div class="callout"><b>Event-sourced by nature.</b> Sync at this layer is a union of append-only logs, so there are no lost writes to reconcile. Higher-level rules (see <a href="#conflicts">Conflict handling</a>) decide how those events fold into your database.</div>
+    </article>
+
+    <article class="doc" id="rooms" data-title="Rooms &amp; isolation" hidden>
+      <p class="kicker">Core concepts</p>
+      <h1>Rooms &amp; isolation</h1>
+      <p class="intro">A room is the boundary of sync. Only devices in the same room discover and replicate with each other — everything else is invisible.</p>
+      <div class="codewrap"><div class="codebar"><i></i><i></i><i></i><span>rooms.js</span></div>
+<pre><span class="kw">new</span> <span class="fn">Nazbu</span>({ name: <span class="str">'till-1'</span>, room: <span class="str">'shop-42'</span> })   <span class="cmt">// only talks to shop-42</span>
+<span class="kw">new</span> <span class="fn">Nazbu</span>({ name: <span class="str">'till-9'</span>, room: <span class="str">'shop-77'</span> })   <span class="cmt">// never sees shop-42</span></pre></div>
+      <p>Two shops on the same Wi-Fi, two apps on the same machine, two tenants in the same product — different rooms means zero cross-talk. If you omit <code>room</code>, everyone lands in <code>default</code>.</p>
+      <h2>Rooms are how you go multi-tenant</h2>
+      <p>Give each tenant its own room — for example <code>room: 'tenant-' + tenantId</code> — and a device only ever syncs its own tenant’s data. See the <a href="#guide-multitenant">multi-tenant guide</a>.</p>
+    </article>
+
+    <article class="doc" id="networking" data-title="Peers &amp; networking" hidden>
+      <p class="kicker">Core concepts</p>
+      <h1>Peers &amp; networking</h1>
+      <p class="intro">Nazbu finds peers on the local network out of the box, and can reach peers across the internet — on completely different networks — when you ask it to.</p>
+      <h2>Local network</h2>
+      <p>By default, devices discover each other on the LAN with no configuration. Put them on the same access point and they connect — no router setup, no static IPs.</p>
+      <h2>Across networks</h2>
+      <p>Turn on internet transport and peers on different networks connect directly through the internet, punching through typical home and office routers, with a relay as a fallback for the strictest ones. No shared Wi-Fi and no VPN required.</p>
+      <div class="codewrap"><div class="codebar"><i></i><i></i><i></i><span>internet.js</span></div>
+<pre><span class="kw">new</span> <span class="fn">Nazbu</span>({ name: <span class="str">'shop-hub'</span>, room: <span class="str">'shop-42'</span>, internet: <span class="kw">true</span> })
+<span class="cmt">// now syncs on the LAN *and* to peers anywhere on the internet</span></pre></div>
+      <h2>Discovered vs connected</h2>
+      <p>Two signals tell you what’s really happening:</p>
+      <ul>
+        <li><code>peers</code> — devices Nazbu has <em>discovered</em>.</li>
+        <li><code>links</code> — devices it is actually <em>connected</em> to and replicating with.</li>
+      </ul>
+      <div class="callout warn"><b>If <code>peers</code> is up but <code>links</code> is 0,</b> the devices can see each other but the connection is blocked — usually a firewall or client-isolation setting on the access point. Fix that and the link comes up on its own.</div>
+    </article>
+
+    <article class="doc" id="conflicts" data-title="Conflict handling" hidden>
+      <p class="kicker">Core concepts</p>
+      <h1>Conflict handling</h1>
+      <p class="intro">Two devices edit while apart, then reconnect. Nazbu folds their changes together with rules you can reason about — so nothing is silently lost or double-counted.</p>
+      <h2>Two kinds of data</h2>
+      <ul>
+        <li><strong>Records that change in place</strong> (a product, a customer, settings) merge <em>last-writer-wins</em>: the most recent edit stands, decided by a per-change version stamp.</li>
+        <li><strong>Things that accumulate</strong> (stock movements, sales, ledger entries) are treated as <em>append-only</em>: every entry is kept and unioned, so two tills selling offline both count. Totals are derived from those entries, never overwritten.</li>
+      </ul>
+      <div class="callout"><b>Why it matters for money.</b> Append-only means concurrent sales from two offline devices don’t clobber each other — the ledger keeps both, and the balance is the sum. That’s the difference between “roughly synced” and “books that reconcile”.</div>
+      <p>Database adapters apply these rules automatically per collection or table; you choose which fields are records and which are accumulators.</p>
+    </article>
+
+    <article class="doc" id="files" data-title="Files &amp; data" hidden>
+      <p class="kicker">Core concepts</p>
+      <h1>Files &amp; data</h1>
+      <p class="intro">Records aren’t the whole story — receipts, photos, signatures and attachments have to travel too. Nazbu syncs binary files alongside the records that point at them.</p>
+      <p>Files are split into chunks and replicated like any other change, so a photo taken on an offline device shows up intact on every other device once they reconnect. A record and its file arrive coherently — you never end up with a row pointing at a picture that isn’t there.</p>
+      <div class="callout"><b>Large and transient files.</b> Adapters can skip things that shouldn’t travel — huge backups, temporary exports — so sync stays lean and only carries what your app actually references.</div>
+    </article>
+
+    <article class="doc" id="adapter-mongodb" data-title="MongoDB adapter" hidden>
+      <p class="kicker">Databases</p>
+      <h1>MongoDB adapter</h1>
+      <p class="intro">The MongoDB adapter syncs a live database with zero changes to your app. It watches Mongo’s change stream, replicates over Nazbu, and applies incoming changes back into each peer’s database.</p>
+      <h2>Requirements</h2>
+      <ul>
+        <li>MongoDB running as a <strong>replica set</strong> (single-node is fine) — that’s what enables change streams.</li>
+        <li>Connect with <code>directConnection=true</code> so the change stream attaches to that node.</li>
+      </ul>
+      <h2>Run it next to your app</h2>
+      <div class="codewrap"><div class="codebar"><i></i><i></i><i></i><span>terminal</span></div>
+<pre>node run.js --full \
+  --room tenant-42 \
+  --name till-1 \
+  --uri <span class="str">"mongodb://127.0.0.1:27017/?replicaSet=rs0&amp;directConnection=true"</span> \
+  --db  mydb \
+  --internet</pre></div>
+      <div class="tbl"><table>
+        <tr><th>Flag</th><th>What it does</th></tr>
+        <tr><td><code>--full</code></td><td>Sync the whole database slice this node owns (all its collections), not just one.</td></tr>
+        <tr><td><code>--room</code></td><td>The sync group. Use one room per tenant/site to keep data apart.</td></tr>
+        <tr><td><code>--name</code></td><td>Friendly name for this node in logs and presence.</td></tr>
+        <tr><td><code>--uri</code></td><td>Your existing Mongo connection string.</td></tr>
+        <tr><td><code>--db</code></td><td>Database to mirror.</td></tr>
+        <tr><td><code>--internet</code></td><td>Also sync across networks, not just the LAN.</td></tr>
+      </table></div>
+      <p>Your application keeps reading and writing Mongo exactly as before. The adapter never touches your documents’ shape — its own bookkeeping lives in a separate place.</p>
+    </article>
+
+    <article class="doc" id="adapter-your-db" data-title="Your database" hidden>
+      <p class="kicker">Databases</p>
+      <h1>Your database</h1>
+      <p class="intro">An adapter is a thin contract: a source that emits changes, and a sink that applies incoming ones. Anything that can report its changes can plug in.</p>
+      <div class="codewrap"><div class="codebar"><i></i><i></i><i></i><span>adapter (shape)</span></div>
+<pre><span class="cmt">// a change SOURCE — tell Nazbu what changed</span>
+onChange((change) =&gt; nazbu.<span class="fn">send</span>(change))
+
+<span class="cmt">// an apply SINK — write what arrives from peers</span>
+nazbu.<span class="fn">on</span>(<span class="str">'message'</span>, (change) =&gt; applyToDb(change))</pre></div>
+      <p>Because most databases expose a change feed — a replication log, a write-ahead log, triggers — the same pattern covers a wide range of systems.</p>
+      <div class="tbl"><table>
+        <tr><th>Database</th><th>Change source</th><th>Status</th></tr>
+        <tr><td>MongoDB</td><td>change streams</td><td>available</td></tr>
+        <tr><td>PostgreSQL</td><td>logical replication (WAL)</td><td>rolling out</td></tr>
+        <tr><td>MySQL / MariaDB</td><td>binlog</td><td>rolling out</td></tr>
+        <tr><td>SQLite</td><td>session / WAL</td><td>rolling out</td></tr>
+        <tr><td>In the browser</td><td>IndexedDB</td><td>rolling out</td></tr>
+      </table></div>
+      <div class="callout">Want an adapter for a database that isn’t listed? The contract above is all it takes — <a href="https://github.com/djabiridrissou/nazbu">open an issue</a> and let’s scope it.</div>
+    </article>
+
+    <article class="doc" id="guide-multitenant" data-title="Multi-tenant apps" hidden>
+      <p class="kicker">Guides</p>
+      <h1>Multi-tenant apps</h1>
+      <p class="intro">One product, many customers, one database — and no customer should ever see another’s data. With Nazbu, tenancy is a room.</p>
+      <p>Run one sync node per tenant and scope it to that tenant’s room. A device only discovers and replicates its own tenant, even if a dozen tenants sit on the same network.</p>
+      <div class="codewrap"><div class="codebar"><i></i><i></i><i></i><span>tenant.js</span></div>
+<pre><span class="kw">const</span> room = <span class="kw">new</span> <span class="fn">Nazbu</span>({
+  name: <span class="str">'till-1'</span>,
+  room: <span class="str">`tenant-</span>${tenantId}<span class="str">`</span>,   <span class="cmt">// isolation boundary</span>
+  internet: <span class="kw">true</span>,
+})</pre></div>
+      <p>With a database adapter, point it at the same room and it filters that tenant’s records — so a shop only ever syncs its own slice, and a shared cloud node can serve every tenant, each on its own room.</p>
+      <div class="callout"><b>Proven at scale of a business.</b> This is exactly how Womola runs: many shops, each a room, all isolated, all syncing to one cloud.</div>
+    </article>
+
+    <article class="doc" id="guide-offline" data-title="Offline-first shops" hidden>
+      <p class="kicker">Guides</p>
+      <h1>Offline-first shops</h1>
+      <p class="intro">The classic setup: a site that must keep selling when the internet is down, and catch up with head office when it’s back.</p>
+      <h2>The topology</h2>
+      <ul>
+        <li><strong>One hub per site</strong> runs your app, its database, and a Nazbu node.</li>
+        <li><strong>Tills and devices</strong> on the site talk to the hub over the local network.</li>
+        <li><strong>A cloud node</strong> joins each site’s room with <code>internet: true</code> and receives everything the moment a connection exists.</li>
+      </ul>
+      <p>Sales, stock and files all accumulate locally with no internet. When the link returns, the site and the cloud reconcile automatically — the cloud is just another peer, never a dependency for the shop to function.</p>
+      <div class="callout"><b>Result.</b> The shop never stops. Head office sees everything, live, as soon as there’s a connection — and if there isn’t, nothing is lost.</div>
+    </article>
+
+    <article class="doc" id="api-nazbu" data-title="new Nazbu(options)" hidden>
+      <p class="kicker">API reference</p>
+      <h1>new Nazbu(options)</h1>
+      <p class="intro">Create a node. It joins a room and, once started, discovers peers and syncs.</p>
+      <div class="tbl"><table>
+        <tr><th>Option</th><th>Type</th><th>Description</th></tr>
+        <tr><td><code>name</code></td><td>string</td><td>Friendly device name. Defaults to a per-process id.</td></tr>
+        <tr><td><code>room</code></td><td>string</td><td>Isolation boundary — only same-room nodes sync. Defaults to <code>'default'</code>.</td></tr>
+        <tr><td><code>internet</code></td><td>boolean</td><td>Add internet transport to reach peers across networks. LAN is always on.</td></tr>
+        <tr><td><code>storage</code></td><td>string</td><td>Where this node keeps its local data. Defaults to a folder per room and name.</td></tr>
+        <tr><td><code>transports</code></td><td>array</td><td>Advanced — override the transport list entirely.</td></tr>
+      </table></div>
+      <div class="codewrap"><div class="codebar"><i></i><i></i><i></i><span>create.js</span></div>
+<pre><span class="kw">const</span> room = <span class="kw">new</span> <span class="fn">Nazbu</span>({
+  name: <span class="str">'till-1'</span>,
+  room: <span class="str">'shop-42'</span>,
+  internet: <span class="kw">true</span>,
+})</pre></div>
+    </article>
+
+    <article class="doc" id="api-events" data-title="Events" hidden>
+      <p class="kicker">API reference</p>
+      <h1>Events</h1>
+      <p class="intro">A node is an event emitter. Subscribe with <code>room.on(event, handler)</code>.</p>
+      <div class="tbl"><table>
+        <tr><th>Event</th><th>Handler</th><th>Fires when</th></tr>
+        <tr><td><code>message</code></td><td><code>(data, meta)</code></td><td>Any message is received or replayed. <code>meta</code> is <code>{ from, key, seq }</code>.</td></tr>
+        <tr><td><code>peers</code></td><td><code>(count)</code></td><td>The number of discovered peers changes.</td></tr>
+        <tr><td><code>link</code></td><td><code>(count)</code></td><td>A replication connection opens or closes — real connectivity.</td></tr>
+      </table></div>
+      <div class="codewrap"><div class="codebar"><i></i><i></i><i></i><span>events.js</span></div>
+<pre>room.<span class="fn">on</span>(<span class="str">'message'</span>, (data, meta) =&gt; render(data, meta.from))
+room.<span class="fn">on</span>(<span class="str">'peers'</span>,   (n) =&gt; ui.<span class="fn">setPeers</span>(n))
+room.<span class="fn">on</span>(<span class="str">'link'</span>,    (n) =&gt; ui.<span class="fn">setOnline</span>(n &gt; <span class="num">0</span>))</pre></div>
+    </article>
+
+    <article class="doc" id="api-methods" data-title="Methods &amp; properties" hidden>
+      <p class="kicker">API reference</p>
+      <h1>Methods &amp; properties</h1>
+      <p class="intro">The full surface — small on purpose.</p>
+      <h2>Methods</h2>
+      <div class="tbl"><table>
+        <tr><th>Method</th><th>Description</th></tr>
+        <tr><td><code>await start()</code></td><td>Begin discovery and replication. Resolves once the node is live.</td></tr>
+        <tr><td><code>await send(data)</code></td><td>Append <code>data</code> to this node’s log and broadcast it. Any JSON-serialisable value.</td></tr>
+      </table></div>
+      <h2>Properties</h2>
+      <div class="tbl"><table>
+        <tr><th>Property</th><th>Description</th></tr>
+        <tr><td><code>peers</code></td><td>Number of discovered peers.</td></tr>
+        <tr><td><code>links</code></td><td>Number of live replication connections.</td></tr>
+        <tr><td><code>key</code></td><td>This node’s stable public key (hex).</td></tr>
+      </table></div>
+      <div class="callout"><b>That’s the whole API.</b> A room, a couple of events, <code>start()</code> and <code>send()</code> — everything else is the engine doing its job underneath.</div>
+    </article>
+
+    <nav class="prevnext">
+      <a class="pn prev" id="nav-prev"><span class="d">← Previous</span><div class="t"></div></a>
+      <a class="pn next" id="nav-next"><span class="d">Next →</span><div class="t"></div></a>
+    </nav>
+
+  </main>
+</div>
+
+<script>
+(function(){
+  var arts = Array.prototype.slice.call(document.querySelectorAll('article.doc'));
+  var ids = arts.map(function(a){return a.id;});
+  var links = Array.prototype.slice.call(document.querySelectorAll('.side a'));
+
+  function setNav(which, art){
+    var el = document.getElementById('nav-'+which);
+    if(!art){ el.style.visibility='hidden'; el.removeAttribute('href'); return; }
+    el.style.visibility='visible';
+    el.setAttribute('href', '#'+art.id);
+    el.querySelector('.t').textContent = art.getAttribute('data-title');
+  }
+  function route(){
+    var id = (location.hash || '').replace('#','');
+    if(ids.indexOf(id) < 0) id = ids[0];
+    arts.forEach(function(a){ a.hidden = (a.id !== id); });
+    links.forEach(function(a){ a.classList.toggle('active', a.getAttribute('href') === '#'+id); });
+    var i = ids.indexOf(id);
+    setNav('prev', i > 0 ? arts[i-1] : null);
+    setNav('next', i < arts.length-1 ? arts[i+1] : null);
+    document.body.classList.remove('side-open');
+    window.scrollTo(0, 0);
+  }
+  window.addEventListener('hashchange', route);
+  route();
+
+  var burger = document.getElementById('burger'), scrim = document.getElementById('scrim');
+  if(burger) burger.addEventListener('click', function(){ document.body.classList.toggle('side-open'); });
+  if(scrim) scrim.addEventListener('click', function(){ document.body.classList.remove('side-open'); });
+})();
+</script>
+</body>
+</html>
