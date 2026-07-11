@@ -379,6 +379,7 @@ nazbu.<span class="fn">on</span>(<span class="str">'message'</span>, (change) =&
         <li><strong>A cloud node</strong> joins each site’s room with <code>internet: true</code> and receives everything the moment a connection exists.</li>
       </ul>
       <p>Sales, stock and files all accumulate locally with no internet. When the link returns, the site and the cloud reconcile automatically — the cloud is just another peer, never a dependency for the shop to function.</p>
+      <div class="callout"><b>Nazbu syncs, the Hub runs.</b> Nazbu handles the data. Making the app itself run on-site — backend, database, a local address, background service and auto-update — is the job of its companion, <a href="https://github.com/djabiridrissou/nazbu-hub">Nazbu Hub</a>. Together they make any app offline-first from one config file.</div>
       <div class="callout"><b>Result.</b> The shop never stops. Head office sees everything, live, as soon as there’s a connection — and if there isn’t, nothing is lost.</div>
     </article>
 

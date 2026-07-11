@@ -12,9 +12,15 @@
 [![offline-first](https://img.shields.io/badge/offline--first-yes-e3b341.svg)](#how-it-works)
 [![stars](https://img.shields.io/github/stars/djabiridrissou/nazbu?style=social)](https://github.com/djabiridrissou/nazbu/stargazers)
 
-**[→ Live site &amp; positioning](https://djabiridrissou.github.io/nazbu/)**
+**[→ Live site &amp; docs](https://djabiridrissou.github.io/nazbu/)**
 
 </div>
+
+---
+
+> **Nazbu syncs. The [Hub](https://github.com/djabiridrissou/nazbu-hub) runs.** Nazbu is pure data
+> sync — it doesn't touch your build. To make a whole app run *on-site* and offline (backend +
+> database + local address + auto-update), pair it with its companion, **[Nazbu Hub](https://github.com/djabiridrissou/nazbu-hub)**.
 
 ---
 
