@@ -128,7 +128,10 @@
     <a href="#conflicts">Conflict handling</a>
     <a href="#files">Files &amp; data</a>
     <div class="grp">Databases</div>
-    <a href="#adapter-mongodb">MongoDB adapter</a>
+    <a href="#adapter-postgres">PostgreSQL</a>
+    <a href="#adapter-mysql">MySQL / MariaDB</a>
+    <a href="#adapter-sqlite">SQLite</a>
+    <a href="#adapter-mongodb">MongoDB</a>
     <a href="#adapter-your-db">Your database</a>
     <div class="grp">Guides</div>
     <a href="#guide-multitenant">Multi-tenant apps</a>
@@ -280,9 +283,95 @@ room.<span class="fn">send</span>({ type: <span class="str">'sale'</span>, total
       <div class="callout"><b>Large and transient files.</b> Adapters can skip things that shouldn’t travel — huge backups, temporary exports — so sync stays lean and only carries what your app actually references.</div>
     </article>
 
-    <article class="doc" id="adapter-mongodb" data-title="MongoDB adapter" hidden>
+    <article class="doc" id="adapter-postgres" data-title="PostgreSQL" hidden>
       <p class="kicker">Databases</p>
-      <h1>MongoDB adapter</h1>
+      <h1>PostgreSQL</h1>
+      <p class="intro">Sync a live PostgreSQL database with zero changes to your app. A tiny trigger on each table records changes; Nazbu replicates them and applies them back on every peer.</p>
+      <h2>Requirements</h2>
+      <ul>
+        <li>PostgreSQL 13+ and a <strong>single-column primary key</strong> on each synced table.</li>
+        <li>The <code>pg</code> driver: <code>npm i nazbu pg</code>.</li>
+      </ul>
+      <h2>One line</h2>
+      <div class="codewrap"><div class="codebar"><i></i><i></i><i></i><span>app.ts</span></div>
+<pre><span class="kw">import</span> Nazbu <span class="kw">from</span> <span class="str">'nazbu'</span>
+<span class="kw">import</span> { Pool } <span class="kw">from</span> <span class="str">'pg'</span>
+
+<span class="kw">const</span> room = <span class="kw">new</span> <span class="fn">Nazbu</span>({
+  db: <span class="kw">new</span> <span class="fn">Pool</span>({ connectionString: <span class="str">'postgres://…/mydb'</span> }),
+  room: <span class="str">'shop-42'</span>,
+  internet: <span class="kw">true</span>,
+  policies: { sales: <span class="str">'append-only'</span>, <span class="str">'*'</span>: <span class="str">'last-writer-wins'</span> }
+})
+<span class="kw">await</span> room.<span class="fn">start</span>()</pre></div>
+      <h2>Or as a zero-code sidecar</h2>
+      <div class="codewrap"><div class="codebar"><i></i><i></i><i></i><span>terminal</span></div>
+<pre>npx nazbu-postgres --room shop-42 --name hub-1 \
+  --uri <span class="str">"postgres://user:pass@127.0.0.1:5432/mydb"</span> \
+  --ledger sales --internet</pre></div>
+      <p>Under the hood it uses triggers plus <code>LISTEN/NOTIFY</code>. Your tables are never altered — Nazbu keeps its own bookkeeping in a few helper tables.</p>
+    </article>
+
+    <article class="doc" id="adapter-mysql" data-title="MySQL / MariaDB" hidden>
+      <p class="kicker">Databases</p>
+      <h1>MySQL / MariaDB</h1>
+      <p class="intro">Sync a live MySQL or MariaDB database with zero changes to your app. Triggers record each change into an outbox; Nazbu replicates and applies it on every peer.</p>
+      <h2>Requirements</h2>
+      <ul>
+        <li>MySQL 5.7+ / 8.0+ / 9.x or MariaDB 10.2+, and a <strong>single-column primary key</strong> on each synced table.</li>
+        <li>The <code>mysql2</code> driver: <code>npm i nazbu mysql2</code>.</li>
+      </ul>
+      <h2>One line</h2>
+      <div class="codewrap"><div class="codebar"><i></i><i></i><i></i><span>app.ts</span></div>
+<pre><span class="kw">import</span> Nazbu <span class="kw">from</span> <span class="str">'nazbu'</span>
+<span class="kw">import</span> mysql <span class="kw">from</span> <span class="str">'mysql2/promise'</span>
+
+<span class="kw">const</span> room = <span class="kw">new</span> <span class="fn">Nazbu</span>({
+  db: mysql.<span class="fn">createPool</span>(<span class="str">'mysql://user:pass@127.0.0.1:3306/mydb'</span>),
+  room: <span class="str">'shop-42'</span>,
+  internet: <span class="kw">true</span>,
+  policies: { sales: <span class="str">'append-only'</span>, <span class="str">'*'</span>: <span class="str">'last-writer-wins'</span> }
+})
+<span class="kw">await</span> room.<span class="fn">start</span>()</pre></div>
+      <h2>Or as a zero-code sidecar</h2>
+      <div class="codewrap"><div class="codebar"><i></i><i></i><i></i><span>terminal</span></div>
+<pre>npx nazbu-mysql --room shop-42 --name hub-1 \
+  --uri <span class="str">"mysql://user:pass@127.0.0.1:3306/mydb"</span> \
+  --ledger sales --internet</pre></div>
+      <p>MySQL has no notifications, so the adapter polls a small outbox table. Your tables are never altered.</p>
+    </article>
+
+    <article class="doc" id="adapter-sqlite" data-title="SQLite" hidden>
+      <p class="kicker">Databases</p>
+      <h1>SQLite</h1>
+      <p class="intro">Sync a local SQLite database with no server at all — just a file. Ideal for edge devices, kiosks and mobile. Triggers capture changes; Nazbu replicates and applies them on every peer.</p>
+      <h2>Requirements</h2>
+      <ul>
+        <li>A <strong>single-column primary key</strong> on each synced table.</li>
+        <li>The <code>better-sqlite3</code> driver: <code>npm i nazbu better-sqlite3</code>.</li>
+      </ul>
+      <h2>One line</h2>
+      <div class="codewrap"><div class="codebar"><i></i><i></i><i></i><span>app.ts</span></div>
+<pre><span class="kw">import</span> Nazbu <span class="kw">from</span> <span class="str">'nazbu'</span>
+<span class="kw">import</span> Database <span class="kw">from</span> <span class="str">'better-sqlite3'</span>
+
+<span class="kw">const</span> room = <span class="kw">new</span> <span class="fn">Nazbu</span>({
+  db: <span class="kw">new</span> <span class="fn">Database</span>(<span class="str">'app.db'</span>),
+  room: <span class="str">'clinic-42'</span>,
+  internet: <span class="kw">true</span>,
+  policies: { visits: <span class="str">'append-only'</span>, <span class="str">'*'</span>: <span class="str">'last-writer-wins'</span> }
+})
+<span class="kw">await</span> room.<span class="fn">start</span>()</pre></div>
+      <h2>Or as a zero-code sidecar</h2>
+      <div class="codewrap"><div class="codebar"><i></i><i></i><i></i><span>terminal</span></div>
+<pre>npx nazbu-sqlite --room clinic-42 --name device-1 \
+  --file ./app.db --ledger visits --internet</pre></div>
+      <p>The database is a single file, so this is the simplest offline-first setup there is — two devices, two files, always in sync.</p>
+    </article>
+
+    <article class="doc" id="adapter-mongodb" data-title="MongoDB" hidden>
+      <p class="kicker">Databases</p>
+      <h1>MongoDB</h1>
       <p class="intro">The MongoDB adapter syncs a live database with zero changes to your app. It watches Mongo’s change stream, replicates over Nazbu, and applies incoming changes back into each peer’s database.</p>
       <h2>Requirements</h2>
       <ul>
