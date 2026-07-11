@@ -65,6 +65,15 @@
   pre{margin:0;padding:18px 20px;overflow-x:auto;font-family:var(--mono);font-size:.85rem;line-height:1.7;color:var(--fg)}
   .cmt{color:var(--fg-faint)}.kw{color:#8fb8ff}.str{color:var(--mesh)}.fn{color:var(--signal)}.num{color:#e0a0ff}
 
+  .tabs{margin:18px 0 22px;border:1px solid var(--line-2);border-radius:12px;overflow:hidden;background:var(--ink-2)}
+  .tabrow{display:flex;flex-wrap:wrap;gap:4px;padding:9px 10px 0;background:var(--ink-3);border-bottom:1px solid var(--line)}
+  .tab{font-family:var(--mono);font-size:.82rem;color:var(--fg-dim);padding:8px 14px;border-radius:8px 8px 0 0;cursor:pointer;border:1px solid transparent;border-bottom:none;background:none;transition:.12s}
+  .tab:hover{color:var(--fg)}
+  .tab.active{color:var(--mesh);background:var(--ink-2);border-color:var(--line);font-weight:600}
+  .tab .soon{color:var(--fg-faint);font-size:.68rem}
+  .tabpanel{display:none}
+  .tabpanel.active{display:block}
+  .tabpanel pre{border:0}
   .callout{border-left:3px solid var(--mesh);background:var(--ink-2);padding:14px 18px;border-radius:0 10px 10px 0;margin:20px 0;color:var(--fg-dim);font-size:.95rem}
   .callout.warn{border-color:var(--signal)}
   .callout b{color:var(--fg)}
@@ -151,43 +160,72 @@
     <article class="doc" id="installation" data-title="Installation" hidden>
       <p class="kicker">Getting started</p>
       <h1>Installation</h1>
-      <p class="intro">Nazbu runs on Node.js 18 or newer. Add it to the project you already have.</p>
-      <div class="codewrap"><div class="codebar"><i></i><i></i><i></i><span>terminal</span></div>
-<pre><span class="cmt"># in your existing app</span>
-npm i nazbu</pre></div>
-      <p>That’s the whole install for a Node app. Nothing else to run — no broker, no daemon, no account.</p>
-      <h2>Other stacks</h2>
-      <p>First-class packages for more ecosystems are rolling out, so the same engine reaches whatever you build with:</p>
-      <div class="tbl"><table>
-        <tr><th>Stack</th><th>Install</th></tr>
-        <tr><td>Node.js</td><td><code>npm i nazbu</code></td></tr>
-        <tr><td>Python</td><td><code>pip install nazbu</code></td></tr>
-        <tr><td>PHP / Laravel</td><td><code>composer require nazbu/nazbu</code></td></tr>
-        <tr><td>Go</td><td><code>go get nazbu.dev/nazbu</code></td></tr>
-        <tr><td>Rust</td><td><code>cargo add nazbu</code></td></tr>
-      </table></div>
-      <div class="callout warn"><b>Today.</b> The Node.js package is the one that ships now and powers production. The others are on the roadmap — the sync core and wire format are the same across all of them.</div>
+      <p class="intro">Add Nazbu to the project you already have. Pick your runtime — the sync core and wire format are identical across all of them.</p>
+      <div class="tabs" data-tabs>
+        <div class="tabrow">
+          <button class="tab active" data-tab="node">Node</button>
+          <button class="tab" data-tab="bun">Bun</button>
+          <button class="tab" data-tab="deno">Deno</button>
+          <button class="tab" data-tab="python">Python <span class="soon">soon</span></button>
+          <button class="tab" data-tab="php">PHP · Laravel <span class="soon">soon</span></button>
+          <button class="tab" data-tab="go">Go <span class="soon">soon</span></button>
+          <button class="tab" data-tab="rust">Rust <span class="soon">soon</span></button>
+        </div>
+        <div class="tabpanel active" data-panel="node"><pre>npm i nazbu</pre></div>
+        <div class="tabpanel" data-panel="bun"><pre>bun add nazbu</pre></div>
+        <div class="tabpanel" data-panel="deno"><pre>deno add npm:nazbu</pre></div>
+        <div class="tabpanel" data-panel="python"><pre>pip install nazbu</pre></div>
+        <div class="tabpanel" data-panel="php"><pre>composer require nazbu/nazbu</pre></div>
+        <div class="tabpanel" data-panel="go"><pre>go get nazbu.dev/nazbu</pre></div>
+        <div class="tabpanel" data-panel="rust"><pre>cargo add nazbu</pre></div>
+      </div>
+      <p>Nothing else to run — no broker, no daemon, no account.</p>
+      <div class="callout"><b>Bun is first-class.</b> Nazbu runs on Bun with full support — <code>bun add nazbu</code> and the exact same API. Node and Bun are the runtimes that ship today; Deno works via the <code>npm:</code> specifier.</div>
+      <div class="callout warn"><b>Other languages.</b> Python, PHP, Go and Rust packages are rolling out. They speak the same sync protocol, so a Bun node and a Python node sync with each other transparently.</div>
     </article>
 
     <article class="doc" id="quick-start" data-title="Quick start" hidden>
       <p class="kicker">Getting started</p>
       <h1>Quick start</h1>
       <p class="intro">A name, a room, and you’re syncing. Run this on two machines with the same room and they find each other and share history automatically.</p>
-      <div class="codewrap"><div class="codebar"><i></i><i></i><i></i><span>app.js</span></div>
+      <div class="tabs" data-tabs>
+        <div class="tabrow">
+          <button class="tab active" data-tab="node">Node</button>
+          <button class="tab" data-tab="bun">Bun</button>
+          <button class="tab" data-tab="deno">Deno</button>
+        </div>
+        <div class="tabpanel active" data-panel="node">
 <pre><span class="kw">const</span> Nazbu = <span class="fn">require</span>(<span class="str">'nazbu'</span>)
 
 <span class="kw">const</span> room = <span class="kw">new</span> <span class="fn">Nazbu</span>({ name: <span class="str">'till-1'</span>, room: <span class="str">'shop-42'</span> })
 
 <span class="cmt">// fires for every message — from other devices AND your own</span>
-room.<span class="fn">on</span>(<span class="str">'message'</span>, (data, meta) =&gt; {
-  console.<span class="fn">log</span>(meta.from, data)
-})
-
-room.<span class="fn">on</span>(<span class="str">'peers'</span>, (count) =&gt; console.<span class="fn">log</span>(<span class="str">'peers:'</span>, count))
+room.<span class="fn">on</span>(<span class="str">'message'</span>, (data, meta) =&gt; console.<span class="fn">log</span>(meta.from, data))
+room.<span class="fn">on</span>(<span class="str">'peers'</span>, (n) =&gt; console.<span class="fn">log</span>(<span class="str">'peers:'</span>, n))
 
 <span class="kw">await</span> room.<span class="fn">start</span>()
-
 room.<span class="fn">send</span>({ type: <span class="str">'sale'</span>, total: <span class="num">4500</span> })</pre></div>
+        <div class="tabpanel" data-panel="bun">
+<pre><span class="kw">import</span> Nazbu <span class="kw">from</span> <span class="str">'nazbu'</span>
+
+<span class="kw">const</span> room = <span class="kw">new</span> <span class="fn">Nazbu</span>({ name: <span class="str">'till-1'</span>, room: <span class="str">'shop-42'</span> })
+
+room.<span class="fn">on</span>(<span class="str">'message'</span>, (data, meta) =&gt; console.<span class="fn">log</span>(meta.from, data))
+room.<span class="fn">on</span>(<span class="str">'peers'</span>, (n) =&gt; console.<span class="fn">log</span>(<span class="str">'peers:'</span>, n))
+
+<span class="kw">await</span> room.<span class="fn">start</span>()
+room.<span class="fn">send</span>({ type: <span class="str">'sale'</span>, total: <span class="num">4500</span> })   <span class="cmt">// run: bun app.js</span></pre></div>
+        <div class="tabpanel" data-panel="deno">
+<pre><span class="kw">import</span> Nazbu <span class="kw">from</span> <span class="str">'npm:nazbu'</span>
+
+<span class="kw">const</span> room = <span class="kw">new</span> <span class="fn">Nazbu</span>({ name: <span class="str">'till-1'</span>, room: <span class="str">'shop-42'</span> })
+
+room.<span class="fn">on</span>(<span class="str">'message'</span>, (data, meta) =&gt; console.<span class="fn">log</span>(meta.from, data))
+room.<span class="fn">on</span>(<span class="str">'peers'</span>, (n) =&gt; console.<span class="fn">log</span>(<span class="str">'peers:'</span>, n))
+
+<span class="kw">await</span> room.<span class="fn">start</span>()
+room.<span class="fn">send</span>({ type: <span class="str">'sale'</span>, total: <span class="num">4500</span> })   <span class="cmt">// run: deno run -A app.js</span></pre></div>
+      </div>
       <h2>What just happened</h2>
       <ul>
         <li><code>name</code> is this device’s friendly label; <code>room</code> is the group it syncs with.</li>
@@ -438,6 +476,23 @@ room.<span class="fn">on</span>(<span class="str">'link'</span>,    (n) =&gt; ui
   var burger = document.getElementById('burger'), scrim = document.getElementById('scrim');
   if(burger) burger.addEventListener('click', function(){ document.body.classList.toggle('side-open'); });
   if(scrim) scrim.addEventListener('click', function(){ document.body.classList.remove('side-open'); });
+
+  // runtime tabs — pick your stack once, every code block on the page follows.
+  function activateTab(key){
+    var any = false;
+    document.querySelectorAll('[data-tabs]').forEach(function(group){
+      var tab = group.querySelector('.tab[data-tab="'+key+'"]');
+      if(!tab) return;                    // this block doesn't offer that runtime — leave it
+      any = true;
+      group.querySelectorAll('.tab').forEach(function(t){ t.classList.toggle('active', t.getAttribute('data-tab')===key); });
+      group.querySelectorAll('.tabpanel').forEach(function(p){ p.classList.toggle('active', p.getAttribute('data-panel')===key); });
+    });
+    if(any){ try{ localStorage.setItem('nazbu-runtime', key); }catch(e){} }
+  }
+  document.querySelectorAll('[data-tabs] .tab').forEach(function(t){
+    t.addEventListener('click', function(){ activateTab(t.getAttribute('data-tab')); });
+  });
+  try{ var saved = localStorage.getItem('nazbu-runtime'); if(saved) activateTab(saved); }catch(e){}
 })();
 </script>
 </body>

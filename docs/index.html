@@ -202,6 +202,8 @@
   <p class="lead">Add Nazbu to the project you already have — no new platform to adopt, no rewrite.</p>
   <div class="stacks">
     <div class="stk"><div class="sl"><i></i>Node.js</div><code>npm i nazbu</code></div>
+    <div class="stk"><div class="sl"><i></i>Bun</div><code>bun add nazbu</code></div>
+    <div class="stk"><div class="sl"><i></i>Deno</div><code>deno add npm:nazbu</code></div>
     <div class="stk soon"><div class="sl"><i></i>Python</div><code>pip install nazbu</code></div>
     <div class="stk soon"><div class="sl"><i></i>PHP · Laravel</div><code>composer require nazbu/nazbu</code></div>
     <div class="stk soon"><div class="sl"><i></i>Go</div><code>go get nazbu.dev/nazbu</code></div>
@@ -275,7 +277,7 @@ room.<span class="fn">send</span>({ type: <span class="str">'sale'</span>, total
 
 <script>
 (function(){
-  var cmds=['npm i nazbu','pip install nazbu','composer require nazbu/nazbu','go get nazbu.dev/nazbu','cargo add nazbu','gem install nazbu','dotnet add package Nazbu'];
+  var cmds=['npm i nazbu','bun add nazbu','deno add npm:nazbu','pip install nazbu','composer require nazbu/nazbu','go get nazbu.dev/nazbu','cargo add nazbu'];
   var el=document.getElementById('tw');
   var reduced=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   if(el){
