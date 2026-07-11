@@ -31,10 +31,11 @@
   "license": "MIT",
   "type": "commonjs",
   "main": "index.js",
+  "types": "./index.d.ts",
   "exports": {
-    ".": "./index.js",
-    "./postgres": "./nazbu-postgres/store.js",
-    "./mongo": "./nazbu-mongo/index.js",
+    ".": { "types": "./index.d.ts", "default": "./index.js" },
+    "./postgres": { "types": "./nazbu-postgres/store.d.ts", "default": "./nazbu-postgres/store.js" },
+    "./mongo": { "types": "./nazbu-mongo/index.d.ts", "default": "./nazbu-mongo/index.js" },
     "./bridge": "./nazbu-mongo/bridge.js",
     "./package.json": "./package.json"
   },
@@ -45,6 +46,7 @@
   },
   "files": [
     "index.js",
+    "index.d.ts",
     "adapters.js",
     "nazbu.js",
     "chat.js",
@@ -52,11 +54,13 @@
     "map.js",
     "transports/",
     "nazbu-mongo/index.js",
+    "nazbu-mongo/index.d.ts",
     "nazbu-mongo/bridge.js",
     "nazbu-mongo/stores.js",
     "nazbu-mongo/tenant-sync.js",
     "nazbu-mongo/run.js",
     "nazbu-postgres/store.js",
+    "nazbu-postgres/store.d.ts",
     "nazbu-postgres/run.js",
     "assets/"
   ],
