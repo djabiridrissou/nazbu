@@ -1,7 +1,7 @@
 {
   "name": "nazbu",
-  "version": "0.1.0",
-  "description": "Local-first sync engine — keep your existing database (Postgres, MongoDB) running offline and in sync across every device, peer-to-peer, with no server.",
+  "version": "0.2.0",
+  "description": "Local-first sync engine — keep your existing database (PostgreSQL, MySQL, MongoDB) running offline and in sync across every device, peer-to-peer, with no server. Fully typed.",
   "keywords": [
     "p2p",
     "local-first",
@@ -11,7 +11,10 @@
     "database",
     "postgres",
     "postgresql",
+    "mysql",
+    "mariadb",
     "mongodb",
+    "typescript",
     "cdc",
     "lan",
     "mdns",
