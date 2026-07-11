@@ -27,11 +27,17 @@ class NazbuMongoBridge {
   }
 
   async start () {
+    // Some stores need one-time setup (create triggers/tables, open a stream).
+    // Do it BEFORE anything can apply, so the infra is ready. Mongo stores that
+    // set up lazily in onLocalChange simply have no start() → skipped.
+    if (typeof this.store.start === 'function') await this.store.start()
+
     // Peer change → apply locally (last-write-wins is decided by the store).
     this.nazbu.on('message', (change, meta) => {
       if (meta.from === this.nazbu.name) return // ignore our own echo
-      const changed = this.store.applyRemote(change)
-      if (changed) this.applied++
+      Promise.resolve(this.store.applyRemote(change))
+        .then(changed => { if (changed) this.applied++ })
+        .catch(() => {})
     })
 
     await this.nazbu.start()

@@ -1,0 +1,13 @@
+{
+  "name": "nazbu-postgres",
+  "version": "0.0.1",
+  "description": "PostgreSQL adapter for Nazbu — sync a live Postgres database peer-to-peer, offline, with no server.",
+  "keywords": ["nazbu", "postgres", "postgresql", "sync", "offline-first", "p2p", "local-first", "cdc"],
+  "license": "MIT",
+  "author": "Djabir",
+  "main": "store.js",
+  "bin": { "nazbu-postgres": "run.js" },
+  "scripts": { "test": "node test-postgres.js" },
+  "dependencies": { "pg": "^8.11.0" },
+  "engines": { "node": ">=18" }
+}

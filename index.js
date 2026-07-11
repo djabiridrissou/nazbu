@@ -43,6 +43,21 @@ class Nazbu extends EventEmitter {
     this.names = new Map()   // hexKey -> friendly name (learned via presence)
     this.local = null
     this.key = null
+
+    // Database-sync mode: `new Nazbu({ db, room, policies })`. When `db` is a pg
+    // Pool or a mongodb Db, Nazbu wires the matching adapter automatically and
+    // keeps that database synced across every peer in the room — no app change.
+    this._db = opts.db || null
+    this._dbConf = {
+      policies: opts.policies || {},
+      tables: opts.tables || null,
+      exclude: opts.exclude || [],
+      tenantId: opts.tenantId || null,
+      ledger: opts.ledger || null
+    }
+    this._dbStore = null
+    this.applied = 0   // peer changes written into the local DB
+    this.sent = 0      // local changes broadcast to peers
   }
 
   // Discovered peers (seen via mDNS) — NOT necessarily connected.
@@ -64,6 +79,21 @@ class Nazbu extends EventEmitter {
     this.local.on('peer-add', emitLink)
     this.local.on('peer-remove', emitLink)
 
+    // DB mode: set up the adapter (create triggers/tables, open the stream) and
+    // attach the apply handler BEFORE replication starts, so the DB infra is
+    // ready and a peer's history is written locally as it streams in.
+    if (this._db) {
+      const { resolveStore } = require('./adapters')
+      this._dbStore = resolveStore(this._db, { name: this.name, ...this._dbConf })
+      if (typeof this._dbStore.start === 'function') await this._dbStore.start()
+      this.on('message', (change, meta) => {
+        if (!change || (meta && meta.from === this.name)) return
+        Promise.resolve(this._dbStore.applyRemote(change))
+          .then(ok => { if (ok) this.applied++ })
+          .catch(() => {})
+      })
+    }
+
     for (const factory of this._transportFactories) {
       const transport = factory({ myKey: this.key, room: this.room })
       transport.events.on('peer-key', hex => this._track(hex))
@@ -76,6 +106,12 @@ class Nazbu extends EventEmitter {
       this.transports.push(transport)
     }
     await Promise.all(this.transports.map(t => t.start()))
+
+    // DB mode: start capturing local writes AFTER the core + transports are up
+    // (mirrors the proven bridge ordering — apply first, then broadcast).
+    if (this._dbStore) {
+      this._dbStore.onLocalChange(change => { this.sent++; this.send(change) })
+    }
     return this
   }
 
@@ -109,6 +145,7 @@ class Nazbu extends EventEmitter {
 
   async close () {
     for (const t of this.transports) { try { t.stop() } catch (_) {} }
+    try { if (this._dbStore) await this._dbStore.close() } catch (_) {}
     try { await this.store.close() } catch (_) {}
   }
 
