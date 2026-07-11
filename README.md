@@ -43,9 +43,10 @@ const room = new Nazbu({
 await room.start()   // that database is now offline-first, on every node
 ```
 
-Adapters: **[PostgreSQL](nazbu-postgres/)**, **[MySQL / MariaDB](nazbu-mysql/)** and **[MongoDB](nazbu-mongo/)**
-ship today (`require('nazbu/postgres')`, `require('nazbu/mysql')`, `require('nazbu/mongo')`), or run any of
-them as a zero-code sidecar (`npx nazbu-mysql --room … --uri …`).
+Adapters: **[PostgreSQL](nazbu-postgres/)**, **[MySQL / MariaDB](nazbu-mysql/)**, **[SQLite](nazbu-sqlite/)**
+and **[MongoDB](nazbu-mongo/)** ship today (`require('nazbu/postgres')`, `require('nazbu/mysql')`,
+`require('nazbu/sqlite')`, `require('nazbu/mongo')`), or run any of them as a zero-code sidecar
+(`npx nazbu-sqlite --room … --file app.db`).
 
 ---
 

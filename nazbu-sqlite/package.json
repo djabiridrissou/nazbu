@@ -1,0 +1,13 @@
+{
+  "name": "nazbu-sqlite",
+  "version": "0.0.1",
+  "description": "SQLite adapter for Nazbu — sync a local SQLite database peer-to-peer, offline, with no server. Great for edge & mobile.",
+  "keywords": ["nazbu", "sqlite", "sync", "offline-first", "p2p", "local-first", "edge", "cdc"],
+  "license": "MIT",
+  "author": "Djabir",
+  "main": "store.js",
+  "bin": { "nazbu-sqlite": "run.js" },
+  "scripts": { "test": "node test-sqlite.js" },
+  "dependencies": { "better-sqlite3": "^11.0.0" },
+  "engines": { "node": ">=18" }
+}

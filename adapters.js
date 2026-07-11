@@ -52,7 +52,21 @@ function resolveStore (db, opts = {}) {
     })
   }
 
-  throw new Error('Nazbu: unrecognised `db`. Pass a pg Pool, a mysql2 Pool, or a mongodb Db.')
+  // better-sqlite3 Database — has .prepare() and .exec() (and no server methods)
+  if (db && typeof db.prepare === 'function' && typeof db.exec === 'function') {
+    let SqliteStore
+    try { ({ SqliteStore } = require('./nazbu-sqlite/store')) }
+    catch (e) { throw new Error('Nazbu: SQLite adapter needs the `better-sqlite3` driver (npm i better-sqlite3) — ' + e.message) }
+    return new SqliteStore({
+      db,
+      name: opts.name,
+      policies: opts.policies || {},
+      tables: opts.tables || null,
+      exclude: opts.exclude || []
+    })
+  }
+
+  throw new Error('Nazbu: unrecognised `db`. Pass a pg Pool, a mysql2 Pool, a better-sqlite3 Database, or a mongodb Db.')
 }
 
 module.exports = { resolveStore }

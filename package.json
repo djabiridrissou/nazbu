@@ -1,7 +1,7 @@
 {
   "name": "nazbu",
-  "version": "0.2.0",
-  "description": "Local-first sync engine — keep your existing database (PostgreSQL, MySQL, MongoDB) running offline and in sync across every device, peer-to-peer, with no server. Fully typed.",
+  "version": "0.3.0",
+  "description": "Local-first sync engine — keep your existing database (PostgreSQL, MySQL, SQLite, MongoDB) running offline and in sync across every device, peer-to-peer, with no server. Fully typed.",
   "keywords": [
     "p2p",
     "local-first",
@@ -13,6 +13,7 @@
     "postgresql",
     "mysql",
     "mariadb",
+    "sqlite",
     "mongodb",
     "typescript",
     "cdc",
@@ -39,6 +40,7 @@
     ".": { "types": "./index.d.ts", "default": "./index.js" },
     "./postgres": { "types": "./nazbu-postgres/store.d.ts", "default": "./nazbu-postgres/store.js" },
     "./mysql": { "types": "./nazbu-mysql/store.d.ts", "default": "./nazbu-mysql/store.js" },
+    "./sqlite": { "types": "./nazbu-sqlite/store.d.ts", "default": "./nazbu-sqlite/store.js" },
     "./mongo": { "types": "./nazbu-mongo/index.d.ts", "default": "./nazbu-mongo/index.js" },
     "./bridge": "./nazbu-mongo/bridge.js",
     "./package.json": "./package.json"
@@ -47,6 +49,7 @@
     "nazbu": "nazbu.js",
     "nazbu-postgres": "nazbu-postgres/run.js",
     "nazbu-mysql": "nazbu-mysql/run.js",
+    "nazbu-sqlite": "nazbu-sqlite/run.js",
     "nazbu-mongo": "nazbu-mongo/run.js"
   },
   "files": [
@@ -70,6 +73,9 @@
     "nazbu-mysql/store.js",
     "nazbu-mysql/store.d.ts",
     "nazbu-mysql/run.js",
+    "nazbu-sqlite/store.js",
+    "nazbu-sqlite/store.d.ts",
+    "nazbu-sqlite/run.js",
     "assets/"
   ],
   "engines": {
@@ -88,12 +94,14 @@
   "peerDependencies": {
     "pg": "^8",
     "mysql2": "^3",
+    "better-sqlite3": ">=9",
     "mongodb": ">=5",
     "bson": ">=5"
   },
   "peerDependenciesMeta": {
     "pg": { "optional": true },
     "mysql2": { "optional": true },
+    "better-sqlite3": { "optional": true },
     "mongodb": { "optional": true },
     "bson": { "optional": true }
   }
