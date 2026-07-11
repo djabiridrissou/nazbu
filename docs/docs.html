@@ -334,7 +334,17 @@ room.<span class="fn">send</span>({ type: <span class="str">'sale'</span>, total
     <article class="doc" id="adapter-your-db" data-title="Your database" hidden>
       <p class="kicker">Databases</p>
       <h1>Your database</h1>
-      <p class="intro">An adapter is a thin contract: a source that emits changes, and a sink that applies incoming ones. Anything that can report its changes can plug in.</p>
+      <p class="intro">Point Nazbu at the database handle you already have — one line — and it wires the matching adapter and keeps that database synced across every peer.</p>
+      <div class="codewrap"><div class="codebar"><i></i><i></i><i></i><span>one-line.js</span></div>
+<pre><span class="kw">const</span> room = <span class="kw">new</span> <span class="fn">Nazbu</span>({
+  db: pool,                 <span class="cmt">// a pg Pool or a mongodb Db</span>
+  room: <span class="str">'hospital-42'</span>,
+  internet: <span class="kw">true</span>,
+  policies: { sales: <span class="str">'append-only'</span>, <span class="str">'*'</span>: <span class="str">'last-writer-wins'</span> }
+})
+<span class="kw">await</span> room.<span class="fn">start</span>()   <span class="cmt">// that database is now offline-first, on every node</span></pre></div>
+      <h2>Under the hood: a thin contract</h2>
+      <p>An adapter is just a source that emits changes and a sink that applies incoming ones. Anything that can report its changes can plug in.</p>
       <div class="codewrap"><div class="codebar"><i></i><i></i><i></i><span>adapter (shape)</span></div>
 <pre><span class="cmt">// a change SOURCE — tell Nazbu what changed</span>
 onChange((change) =&gt; nazbu.<span class="fn">send</span>(change))
@@ -345,7 +355,7 @@ nazbu.<span class="fn">on</span>(<span class="str">'message'</span>, (change) =&
       <div class="tbl"><table>
         <tr><th>Database</th><th>Change source</th><th>Status</th></tr>
         <tr><td>MongoDB</td><td>change streams</td><td>available</td></tr>
-        <tr><td>PostgreSQL</td><td>logical replication (WAL)</td><td>rolling out</td></tr>
+        <tr><td>PostgreSQL</td><td>triggers + LISTEN/NOTIFY</td><td>available</td></tr>
         <tr><td>MySQL / MariaDB</td><td>binlog</td><td>rolling out</td></tr>
         <tr><td>SQLite</td><td>session / WAL</td><td>rolling out</td></tr>
         <tr><td>In the browser</td><td>IndexedDB</td><td>rolling out</td></tr>
