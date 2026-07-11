@@ -160,28 +160,14 @@
     <article class="doc" id="installation" data-title="Installation" hidden>
       <p class="kicker">Getting started</p>
       <h1>Installation</h1>
-      <p class="intro">Add Nazbu to the project you already have. Pick your runtime — the sync core and wire format are identical across all of them.</p>
-      <div class="tabs" data-tabs>
-        <div class="tabrow">
-          <button class="tab active" data-tab="node">Node</button>
-          <button class="tab" data-tab="bun">Bun</button>
-          <button class="tab" data-tab="deno">Deno</button>
-          <button class="tab" data-tab="python">Python <span class="soon">soon</span></button>
-          <button class="tab" data-tab="php">PHP · Laravel <span class="soon">soon</span></button>
-          <button class="tab" data-tab="go">Go <span class="soon">soon</span></button>
-          <button class="tab" data-tab="rust">Rust <span class="soon">soon</span></button>
-        </div>
-        <div class="tabpanel active" data-panel="node"><pre>npm i nazbu</pre></div>
-        <div class="tabpanel" data-panel="bun"><pre>bun add nazbu</pre></div>
-        <div class="tabpanel" data-panel="deno"><pre>deno add npm:nazbu</pre></div>
-        <div class="tabpanel" data-panel="python"><pre>pip install nazbu</pre></div>
-        <div class="tabpanel" data-panel="php"><pre>composer require nazbu/nazbu</pre></div>
-        <div class="tabpanel" data-panel="go"><pre>go get nazbu.dev/nazbu</pre></div>
-        <div class="tabpanel" data-panel="rust"><pre>cargo add nazbu</pre></div>
-      </div>
-      <p>Nothing else to run — no broker, no daemon, no account.</p>
-      <div class="callout"><b>Bun is first-class.</b> Nazbu runs on Bun with full support — <code>bun add nazbu</code> and the exact same API. Node and Bun are the runtimes that ship today; Deno works via the <code>npm:</code> specifier.</div>
-      <div class="callout warn"><b>Other languages.</b> Python, PHP, Go and Rust packages are rolling out. They speak the same sync protocol, so a Bun node and a Python node sync with each other transparently.</div>
+      <p class="intro">Nazbu runs on Node.js 18 or newer. Add it to the project you already have — nothing else to run, no broker, no daemon, no account.</p>
+      <div class="codewrap"><div class="codebar"><i></i><i></i><i></i><span>terminal</span></div>
+<pre>npm i nazbu</pre></div>
+      <p>If you sync a database, add its driver too — <code>pg</code> for PostgreSQL or <code>mongodb</code> for MongoDB:</p>
+      <div class="codewrap"><div class="codebar"><i></i><i></i><i></i><span>terminal</span></div>
+<pre>npm i nazbu pg          <span class="cmt"># for PostgreSQL</span>
+npm i nazbu mongodb     <span class="cmt"># for MongoDB</span></pre></div>
+      <div class="callout"><b>TypeScript works out of the box.</b> Type definitions ship inside the package — no <code>@types/nazbu</code> to install. You get full autocomplete and type-checking for the API, the options, and the events.</div>
     </article>
 
     <article class="doc" id="quick-start" data-title="Quick start" hidden>
@@ -190,11 +176,10 @@
       <p class="intro">A name, a room, and you’re syncing. Run this on two machines with the same room and they find each other and share history automatically.</p>
       <div class="tabs" data-tabs>
         <div class="tabrow">
-          <button class="tab active" data-tab="node">Node</button>
-          <button class="tab" data-tab="bun">Bun</button>
-          <button class="tab" data-tab="deno">Deno</button>
+          <button class="tab active" data-tab="js">JavaScript</button>
+          <button class="tab" data-tab="ts">TypeScript</button>
         </div>
-        <div class="tabpanel active" data-panel="node">
+        <div class="tabpanel active" data-panel="js">
 <pre><span class="kw">const</span> Nazbu = <span class="fn">require</span>(<span class="str">'nazbu'</span>)
 
 <span class="kw">const</span> room = <span class="kw">new</span> <span class="fn">Nazbu</span>({ name: <span class="str">'till-1'</span>, room: <span class="str">'shop-42'</span> })
@@ -205,26 +190,17 @@ room.<span class="fn">on</span>(<span class="str">'peers'</span>, (n) =&gt; cons
 
 <span class="kw">await</span> room.<span class="fn">start</span>()
 room.<span class="fn">send</span>({ type: <span class="str">'sale'</span>, total: <span class="num">4500</span> })</pre></div>
-        <div class="tabpanel" data-panel="bun">
+        <div class="tabpanel" data-panel="ts">
 <pre><span class="kw">import</span> Nazbu <span class="kw">from</span> <span class="str">'nazbu'</span>
 
 <span class="kw">const</span> room = <span class="kw">new</span> <span class="fn">Nazbu</span>({ name: <span class="str">'till-1'</span>, room: <span class="str">'shop-42'</span> })
 
+<span class="cmt">// data + meta are fully typed — meta.from, meta.seq, …</span>
 room.<span class="fn">on</span>(<span class="str">'message'</span>, (data, meta) =&gt; console.<span class="fn">log</span>(meta.from, data))
-room.<span class="fn">on</span>(<span class="str">'peers'</span>, (n) =&gt; console.<span class="fn">log</span>(<span class="str">'peers:'</span>, n))
+room.<span class="fn">on</span>(<span class="str">'peers'</span>, (n: <span class="kw">number</span>) =&gt; console.<span class="fn">log</span>(<span class="str">'peers:'</span>, n))
 
 <span class="kw">await</span> room.<span class="fn">start</span>()
-room.<span class="fn">send</span>({ type: <span class="str">'sale'</span>, total: <span class="num">4500</span> })   <span class="cmt">// run: bun app.js</span></pre></div>
-        <div class="tabpanel" data-panel="deno">
-<pre><span class="kw">import</span> Nazbu <span class="kw">from</span> <span class="str">'npm:nazbu'</span>
-
-<span class="kw">const</span> room = <span class="kw">new</span> <span class="fn">Nazbu</span>({ name: <span class="str">'till-1'</span>, room: <span class="str">'shop-42'</span> })
-
-room.<span class="fn">on</span>(<span class="str">'message'</span>, (data, meta) =&gt; console.<span class="fn">log</span>(meta.from, data))
-room.<span class="fn">on</span>(<span class="str">'peers'</span>, (n) =&gt; console.<span class="fn">log</span>(<span class="str">'peers:'</span>, n))
-
-<span class="kw">await</span> room.<span class="fn">start</span>()
-room.<span class="fn">send</span>({ type: <span class="str">'sale'</span>, total: <span class="num">4500</span> })   <span class="cmt">// run: deno run -A app.js</span></pre></div>
+room.<span class="fn">send</span>({ type: <span class="str">'sale'</span>, total: <span class="num">4500</span> })</pre></div>
       </div>
       <h2>What just happened</h2>
       <ul>
@@ -354,11 +330,8 @@ nazbu.<span class="fn">on</span>(<span class="str">'message'</span>, (change) =&
       <p>Because most databases expose a change feed — a replication log, a write-ahead log, triggers — the same pattern covers a wide range of systems.</p>
       <div class="tbl"><table>
         <tr><th>Database</th><th>Change source</th><th>Status</th></tr>
-        <tr><td>MongoDB</td><td>change streams</td><td>available</td></tr>
         <tr><td>PostgreSQL</td><td>triggers + LISTEN/NOTIFY</td><td>available</td></tr>
-        <tr><td>MySQL / MariaDB</td><td>binlog</td><td>rolling out</td></tr>
-        <tr><td>SQLite</td><td>session / WAL</td><td>rolling out</td></tr>
-        <tr><td>In the browser</td><td>IndexedDB</td><td>rolling out</td></tr>
+        <tr><td>MongoDB</td><td>change streams</td><td>available</td></tr>
       </table></div>
       <div class="callout">Want an adapter for a database that isn’t listed? The contract above is all it takes — <a href="https://github.com/djabiridrissou/nazbu">open an issue</a> and let’s scope it.</div>
     </article>

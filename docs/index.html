@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Nazbu — always on, online or off</title>
-<meta name="description" content="Nazbu keeps your app and its data running on every device — with or without internet, with no server. One line, any stack.">
+<meta name="description" content="Nazbu keeps your existing database (Postgres, MongoDB) running offline and in sync across every device — no server, no rewrite. Node.js, fully typed.">
 <meta property="og:title" content="Nazbu — always on, online or off">
-<meta property="og:description" content="Keep your app running on every device, with or without internet. No server. One line, any stack.">
+<meta property="og:description" content="Sync the database you already run — offline, across every device, with no server. One line, fully typed.">
 <meta property="og:type" content="website">
 <meta name="theme-color" content="#08090D">
 <style>
@@ -151,7 +151,7 @@
     <h1>It just works.<br><span class="g">Online or off.</span></h1>
     <p class="hero-sub">Nazbu keeps your app and its data alive on every device — with or without internet, and with no server.</p>
     <div class="term"><span class="pr">$</span> <span id="tw"></span><span class="cur"></span></div>
-    <div class="term-note">one line · any stack</div>
+    <div class="term-note">one line · Node.js · TypeScript-ready</div>
     <div class="hero-cta">
       <a class="btn btn-p" href="docs.html">Get started →</a>
       <a class="btn" href="#how">See how it works</a>
@@ -197,32 +197,14 @@
 </div></section>
 
 <section class="band"><div class="wrap">
-  <p class="eyebrow">works with your stack</p>
-  <h2>One line. Whatever you build with.</h2>
-  <p class="lead">Add Nazbu to the project you already have — no new platform to adopt, no rewrite.</p>
-  <div class="stacks">
-    <div class="stk"><div class="sl"><i></i>Node.js</div><code>npm i nazbu</code></div>
-    <div class="stk"><div class="sl"><i></i>Bun</div><code>bun add nazbu</code></div>
-    <div class="stk"><div class="sl"><i></i>Deno</div><code>deno add npm:nazbu</code></div>
-    <div class="stk soon"><div class="sl"><i></i>Python</div><code>pip install nazbu</code></div>
-    <div class="stk soon"><div class="sl"><i></i>PHP · Laravel</div><code>composer require nazbu/nazbu</code></div>
-    <div class="stk soon"><div class="sl"><i></i>Go</div><code>go get nazbu.dev/nazbu</code></div>
-    <div class="stk soon"><div class="sl"><i></i>Rust</div><code>cargo add nazbu</code></div>
-    <div class="stk soon"><div class="sl"><i></i>Ruby</div><code>gem install nazbu</code></div>
-    <div class="stk soon"><div class="sl"><i></i>.NET</div><code>dotnet add package Nazbu</code></div>
-    <div class="stk soon"><div class="sl"><i></i>Java</div><code>implementation "dev.nazbu:nazbu"</code></div>
-  </div>
-
+  <p class="eyebrow">your database, unchanged</p>
+  <h2>Sync the database you already run.</h2>
+  <p class="lead">Point Nazbu at your existing database and it keeps it offline-first and in sync across every device — no migration, no new store.</p>
   <div class="dbline">
-    <span class="db"><i></i>MongoDB</span>
     <span class="db"><i></i>PostgreSQL</span>
-    <span class="db d"><i></i>MySQL</span>
-    <span class="db d"><i></i>SQLite</span>
-    <span class="db d"><i></i>SQL Server</span>
-    <span class="db d"><i></i>in the browser</span>
-    <span class="db d"><i></i>your database</span>
+    <span class="db"><i></i>MongoDB</span>
   </div>
-  <p class="dbcap"><span style="color:var(--mesh)">●</span> available today &nbsp;&nbsp; <span style="color:var(--signal)">●</span> rolling out — Nazbu keeps <em>your</em> database, unchanged.</p>
+  <p class="dbcap">Ships today for Postgres and MongoDB. Any database with a change feed can plug in — the adapter contract is tiny.</p>
 </div></section>
 
 <section class="band"><div class="wrap">
@@ -241,19 +223,22 @@
 <section class="band"><div class="wrap">
   <p class="eyebrow">quick start</p>
   <h2>This is the whole integration.</h2>
-  <p class="lead">A name, a room to sync in, and you’re live — offline, on every device, converging on its own.</p>
+  <p class="lead">Your existing database connection, a room to sync in, and you’re live — offline, on every device, converging on its own.</p>
   <div class="codewrap">
-    <div class="codebar"><i></i><i></i><i></i><span>app.js</span></div>
-<pre><span class="kw">const</span> Nazbu = <span class="fn">require</span>(<span class="str">'nazbu'</span>)
+    <div class="codebar"><i></i><i></i><i></i><span>app.ts</span></div>
+<pre><span class="kw">import</span> Nazbu <span class="kw">from</span> <span class="str">'nazbu'</span>
+<span class="kw">import</span> { Pool } <span class="kw">from</span> <span class="str">'pg'</span>
 
-<span class="kw">const</span> room = <span class="kw">new</span> <span class="fn">Nazbu</span>({ name: <span class="str">'till-1'</span>, room: <span class="str">'shop-42'</span> })
+<span class="kw">const</span> room = <span class="kw">new</span> <span class="fn">Nazbu</span>({
+  db: <span class="kw">new</span> <span class="fn">Pool</span>({ connectionString: process.env.DATABASE_URL }),
+  room: <span class="str">'shop-42'</span>,
+  internet: <span class="kw">true</span>,
+  policies: { sales: <span class="str">'append-only'</span>, <span class="str">'*'</span>: <span class="str">'last-writer-wins'</span> }
+})
 
-room.<span class="fn">on</span>(<span class="str">'message'</span>, (data) =&gt; render(data))   <span class="cmt">// arrives from any device, live</span>
-<span class="kw">await</span> room.<span class="fn">start</span>()                            <span class="cmt">// discovers peers, syncs history</span>
-
-room.<span class="fn">send</span>({ type: <span class="str">'sale'</span>, total: <span class="str">4500</span> })    <span class="cmt">// broadcast to everyone, even offline</span></pre>
+<span class="kw">await</span> room.<span class="fn">start</span>()   <span class="cmt">// that database is now offline-first, on every node</span></pre>
   </div>
-  <p class="code-note">No new database, no server to run. Turn it off and your app still works — it just stops surviving the outage.</p>
+  <p class="code-note">No new database, no server to run. Fully typed — TypeScript definitions ship in the box. Turn Nazbu off and your app still works; it just stops surviving the outage.</p>
   <div class="cta2">
     <a class="btn btn-p" href="docs.html">Read the docs →</a>
     <a class="btn" href="https://github.com/djabiridrissou/nazbu">★ GitHub</a>
@@ -277,21 +262,12 @@ room.<span class="fn">send</span>({ type: <span class="str">'sale'</span>, total
 
 <script>
 (function(){
-  var cmds=['npm i nazbu','bun add nazbu','deno add npm:nazbu','pip install nazbu','composer require nazbu/nazbu','go get nazbu.dev/nazbu','cargo add nazbu'];
   var el=document.getElementById('tw');
   var reduced=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var CMD='npm i nazbu';
   if(el){
-    if(reduced){ el.textContent=cmds[0]; }
-    else{
-      var ci=0,n=0,phase='type';
-      (function step(){
-        var c=cmds[ci],delay=70;
-        if(phase==='type'){ n++; el.textContent=c.slice(0,n); if(n>=c.length){phase='pause';delay=1600;} else delay=55+Math.random()*55; }
-        else if(phase==='pause'){ phase='del'; delay=500; }
-        else { n--; el.textContent=c.slice(0,Math.max(0,n)); if(n<=0){phase='type';ci=(ci+1)%cmds.length;delay=280;} else delay=26; }
-        setTimeout(step,delay);
-      })();
-    }
+    if(reduced){ el.textContent=CMD; }
+    else{ var n=0; (function t(){ el.textContent=CMD.slice(0,n); if(n<CMD.length){ n++; setTimeout(t,70); } })(); }
   }
 
   var canvas=document.getElementById('mesh'); if(!canvas) return;
