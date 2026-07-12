@@ -34,6 +34,18 @@ const TOKEN = (process.env.LICENSE_TOKEN ||
 
 const BATCH = 500
 
+// ── Live progress ────────────────────────────────────────────────────────────
+// The whole pull can take minutes on a large tenant. Without feedback the caller
+// (desktop supervisor) shows a frozen "Downloading…" screen that reads as a hang.
+// Emit a throttled, machine-parseable marker so it can render a moving count.
+let _lastEmit = 0
+function emitProgress (col, total, force) {
+  const now = Date.now()
+  if (!force && now - _lastEmit < 400) return
+  _lastEmit = now
+  try { console.log(`__seed ${JSON.stringify({ n: total, c: col || '' })}`) } catch (_) {}
+}
+
 async function main () {
   if (!TOKEN) throw new Error('LICENSE_TOKEN (or LICENSE_TOKEN_PATH) is required')
 
@@ -64,6 +76,7 @@ async function main () {
     )
     total += batch.length
     batch = []
+    emitProgress(current, total)
   }
 
   async function handleLine (line) {
@@ -72,7 +85,7 @@ async function main () {
     try { obj = EJSON.parse(line) } catch { return }
     if (obj.__meta) { tenantName = obj.__meta.tenantName || ''; return }
     if (obj.__done) { await flush(); return }
-    if (obj.__col) { await flush(); current = obj.__col; return }
+    if (obj.__col) { await flush(); current = obj.__col; emitProgress(current, total, true); return }
     if (!current) return
     batch.push(obj)
     if (batch.length >= BATCH) await flush()
@@ -92,6 +105,7 @@ async function main () {
   }
   if (buf.trim()) await handleLine(buf.trim())
   await flush()
+  emitProgress(current, total, true)
 
   await client.close()
   console.log(`seed-cloud: imported ${total} docs${tenantName ? ` for ${tenantName}` : ''}`)
